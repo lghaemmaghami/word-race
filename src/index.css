@@ -1,23 +1,29 @@
 :root {
-  --ink: #071512;
-  --ink-2: #0d2420;
-  --panel: rgba(14, 42, 36, 0.72);
-  --line: rgba(200, 245, 96, 0.18);
-  --lime: #c8f560;
-  --lime-deep: #9bcf2e;
-  --sand: #f3efe4;
-  --sand-dim: rgba(243, 239, 228, 0.72);
-  --danger: #ff6b4a;
-  --tile: #f7f1df;
-  --tile-ink: #1a1814;
-  --dl: #3d8f9c;
-  --tl: #2f6f9c;
-  --dw: #c45c4a;
-  --tw: #b33b2f;
+  --green: #4fb477;
+  --blue: #3083dc;
+  --purple: #ab87ff;
+  --ivory: #fffffa;
+  --char: #333138;
+
+  --ink: #333138;
+  --ink-2: #333138;
+  --panel: #333138;
+  --line: #fffffa;
+  --lime: #4fb477;
+  --lime-deep: #4fb477;
+  --sand: #fffffa;
+  --sand-dim: #fffffa;
+  --danger: #ab87ff;
+  --tile: #fffffa;
+  --tile-ink: #333138;
+  --dl: #5a8fc4;
+  --tl: #6aa887;
+  --dw: #9a88d4;
+  --tw: #222a68;
   --font-display: 'Bebas Neue', sans-serif;
   --font-body: 'Outfit', sans-serif;
-  color: var(--sand);
-  background: var(--ink);
+  color: #fffffa;
+  background: #333138;
   font-family: var(--font-body);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -39,11 +45,7 @@ body,
 body {
   min-height: 100vh;
   min-height: 100dvh;
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(200, 245, 96, 0.16), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, rgba(61, 143, 156, 0.22), transparent 50%),
-    linear-gradient(160deg, #06110e 0%, #0b1f1a 45%, #102821 100%);
-  background-attachment: fixed;
+  background: #333138;
   overscroll-behavior: none;
 }
 

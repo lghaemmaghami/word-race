@@ -1,6 +1,6 @@
 # Word Race
 
-Single-player Scrabble-style word race against an AI on a shared 15×15 board.
+Single-player word race against an AI on a shared 15×15 board.
 
 ## Play
 
@@ -17,4 +17,4 @@ Open the local URL, choose **Easy** or **Hard**, and race the clock.
 - Full-board rearrange before submit; no locked tiles
 - Delta scoring: `max(0, newBoardScore - previousBoardScore)`
 - AI must move within 5 seconds or swap/pass
-- Dictionary is ENABLE plus official Scrabble two-letter words (junk like IR/CS is rejected)
+- Dictionary is ENABLE plus the official two-letter word list (junk like IR/CS is rejected)

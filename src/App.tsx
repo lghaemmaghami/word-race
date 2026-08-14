@@ -24,6 +24,8 @@ export default function App() {
         playerScore={game.playerScore}
         aiScore={game.aiScore}
         difficulty={game.difficulty}
+        board={game.committedBoard}
+        playedWords={game.playedWords}
         onPlayAgain={game.playAgain}
         onHome={game.backToStart}
       />

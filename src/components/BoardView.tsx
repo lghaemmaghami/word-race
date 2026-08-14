@@ -4,11 +4,12 @@ import type { Board, Tile } from '../game/types'
 
 interface BoardViewProps {
   board: Board
-  committedBoard: Board
-  selectedTileId: string | null
-  onCellClick: (row: number, col: number) => void
+  committedBoard?: Board
+  selectedTileId?: string | null
+  onCellClick?: (row: number, col: number) => void
   letterValue: (letter: string) => number
   disabled?: boolean
+  readOnly?: boolean
 }
 
 export function BoardView({
@@ -18,17 +19,24 @@ export function BoardView({
   onCellClick,
   letterValue,
   disabled,
+  readOnly,
 }: BoardViewProps) {
-  const committedIds = boardTileIds(committedBoard)
+  const committedIds = committedBoard ? boardTileIds(committedBoard) : null
 
   return (
-    <div className={`board ${disabled ? 'is-disabled' : ''}`} role="grid" aria-label="Word Race board">
+    <div
+      className={['board', disabled ? 'is-disabled' : '', readOnly ? 'is-readonly' : '']
+        .filter(Boolean)
+        .join(' ')}
+      role="grid"
+      aria-label="Word Race board"
+    >
       {board.map((row, r) =>
         row.map((cell, c) => {
           const mult = MULTIPLIERS[r][c]
           const isCenter = r === CENTER && c === CENTER
-          const isNew = cell && !committedIds.has(cell.id)
-          const isSelected = cell && cell.id === selectedTileId
+          const isNew = Boolean(cell && committedIds && !committedIds.has(cell.id))
+          const isSelected = Boolean(cell && selectedTileId && cell.id === selectedTileId)
           return (
             <button
               key={`${r}-${c}`}
@@ -43,8 +51,10 @@ export function BoardView({
               ]
                 .filter(Boolean)
                 .join(' ')}
-              onClick={() => onCellClick(r, c)}
-              disabled={disabled}
+              onClick={() => onCellClick?.(r, c)}
+              disabled={disabled && !readOnly}
+              tabIndex={readOnly ? -1 : undefined}
+              aria-disabled={readOnly || disabled}
               aria-label={
                 cell
                   ? `Tile ${cell.letter} at row ${r + 1} column ${c + 1}`

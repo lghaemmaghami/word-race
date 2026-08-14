@@ -613,30 +613,35 @@
   .board {
     --gap: 1px;
     --pad: 3px;
-    /* Width-first; cap with svh so Safari chrome never forces overflow.
-       Avoid % height here — it circularly collapses the grid. */
-    --cell: min(
-      calc((100vw - 1.1rem - 2 * var(--pad) - 14 * var(--gap)) / 15),
-      calc((100svh - 12.75rem) / 15)
-    );
+    width: min(100%, calc(100svh - 12.75rem));
+    aspect-ratio: 1 / 1;
+    height: auto;
+    grid-template-columns: repeat(15, minmax(0, 1fr));
+    grid-template-rows: repeat(15, minmax(0, 1fr));
+    gap: var(--gap);
+    padding: var(--pad);
     border-radius: 8px;
     box-shadow: none;
   }
 
   .cell {
+    width: auto;
+    height: auto;
+    min-width: 0;
+    min-height: 0;
     border-radius: 2px;
   }
 
   .mult-label {
-    font-size: 0.38rem;
+    font-size: 0.4rem;
   }
 
   .tile-letter {
-    font-size: calc(var(--cell) * 0.55);
+    font-size: clamp(0.55rem, 2.8vw, 0.85rem);
   }
 
   .tile-value {
-    font-size: calc(var(--cell) * 0.28);
+    font-size: clamp(0.3rem, 1.4vw, 0.45rem);
     right: 1px;
     bottom: 0;
   }

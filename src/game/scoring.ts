@@ -1,6 +1,6 @@
 import { BOARD_SIZE, CENTER, MULTIPLIERS, letterValue } from './constants'
 import { getOccupiedPositions } from './board'
-import type { Board } from './types'
+import type { Board, TileOwner } from './types'
 import type { Dictionary } from './dictionary'
 
 export interface ExtractedWord {
@@ -72,11 +72,46 @@ export interface ScoredWord {
   score: number
 }
 
+export interface AttributedWord extends ScoredWord {
+  by: TileOwner
+}
+
+function sortScoredWords<T extends ScoredWord>(words: T[]): T[] {
+  return words.sort((a, b) => b.score - a.score || a.word.localeCompare(b.word))
+}
+
 /** Every 2+ letter word on the board with its current multiplier score, highest first. */
 export function listScoredWords(board: Board): ScoredWord[] {
-  return extractWords(board)
-    .map((w) => ({ word: w.word, score: scoreWord(board, w.cells) }))
-    .sort((a, b) => b.score - a.score || a.word.localeCompare(b.word))
+  return sortScoredWords(
+    extractWords(board).map((w) => ({ word: w.word, score: scoreWord(board, w.cells) })),
+  )
+}
+
+/**
+ * Credit each word to the player who placed more of its tiles.
+ * Ties go to the human player.
+ */
+export function listAttributedWords(
+  board: Board,
+  owners: Record<string, TileOwner>,
+): AttributedWord[] {
+  return sortScoredWords(
+    extractWords(board).map((w) => {
+      let playerTiles = 0
+      let aiTiles = 0
+      for (const { row, col } of w.cells) {
+        const tile = board[row][col]
+        if (!tile) continue
+        if (owners[tile.id] === 'ai') aiTiles++
+        else playerTiles++
+      }
+      return {
+        word: w.word,
+        score: scoreWord(board, w.cells),
+        by: aiTiles > playerTiles ? 'ai' : 'player',
+      }
+    }),
+  )
 }
 
 /** Total score of every 2+ letter word on the board (multipliers always applied by position). */

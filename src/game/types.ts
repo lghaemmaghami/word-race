@@ -1,5 +1,7 @@
 export type Difficulty = 'easy' | 'hard'
 
+export type TileOwner = 'player' | 'ai'
+
 export type Multiplier = 'none' | 'DL' | 'TL' | 'DW' | 'TW'
 
 export interface Tile {

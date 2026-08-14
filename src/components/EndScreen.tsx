@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { formatDifficulty, loadLeaderboard } from '../game/leaderboard'
 import { letterValue } from '../game/constants'
-import { listScoredWords } from '../game/scoring'
-import type { Board, Difficulty } from '../game/types'
+import { listAttributedWords, type AttributedWord } from '../game/scoring'
+import type { Board, Difficulty, TileOwner } from '../game/types'
 import { BoardView } from './BoardView'
 
 interface EndScreenProps {
@@ -11,8 +11,34 @@ interface EndScreenProps {
   aiScore: number
   difficulty: Difficulty
   board: Board
+  tileOwners: Record<string, TileOwner>
   onPlayAgain: () => void
   onHome: () => void
+}
+
+function WordColumn({ title, words, tone }: { title: string; words: AttributedWord[]; tone: 'player' | 'ai' }) {
+  const total = words.reduce((sum, w) => sum + w.score, 0)
+  return (
+    <div className={`word-column ${tone}`}>
+      <h3>{title}</h3>
+      {words.length === 0 ? (
+        <p className="status-line">None</p>
+      ) : (
+        <ol>
+          {words.map((w, i) => (
+            <li key={`${w.word}-${i}`}>
+              <span className="word">{w.word}</span>
+              <span className="pts">{w.score}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+      <p className="word-column-total">
+        <span>Total</span>
+        <strong>{total}</strong>
+      </p>
+    </div>
+  )
 }
 
 export function EndScreen({
@@ -21,12 +47,15 @@ export function EndScreen({
   aiScore,
   difficulty,
   board,
+  tileOwners,
   onPlayAgain,
   onHome,
 }: EndScreenProps) {
   const diff = playerScore - aiScore
   const leaders = loadLeaderboard()
-  const words = useMemo(() => listScoredWords(board), [board])
+  const words = useMemo(() => listAttributedWords(board, tileOwners), [board, tileOwners])
+  const yours = words.filter((w) => w.by === 'player')
+  const theirs = words.filter((w) => w.by === 'ai')
   const boardTotal = words.reduce((sum, w) => sum + w.score, 0)
 
   return (
@@ -65,18 +94,14 @@ export function EndScreen({
 
         <div className="word-list">
           <h2>Words played</h2>
-          <p className="leaderboard-note">Each word's score on the final board</p>
+          <p className="leaderboard-note">Credited to whoever placed more tiles in the word</p>
           {words.length === 0 ? (
             <p className="status-line">No words were played.</p>
           ) : (
-            <ol>
-              {words.map((w, i) => (
-                <li key={`${w.word}-${i}`}>
-                  <span className="word">{w.word}</span>
-                  <span className="pts">{w.score}</span>
-                </li>
-              ))}
-            </ol>
+            <div className="word-columns">
+              <WordColumn title="You" words={yours} tone="player" />
+              <WordColumn title="AI" words={theirs} tone="ai" />
+            </div>
           )}
           {words.length > 0 ? (
             <p className="word-list-total">

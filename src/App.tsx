@@ -25,6 +25,7 @@ export default function App() {
         aiScore={game.aiScore}
         difficulty={game.difficulty}
         board={game.committedBoard}
+        tileOwners={game.tileOwners}
         onPlayAgain={game.playAgain}
         onHome={game.backToStart}
       />

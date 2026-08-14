@@ -1,3 +1,5 @@
+import { SCRABBLE_TWO_LETTER_WORDS } from './twoLetterWords'
+
 export class Dictionary {
   private words = new Set<string>()
   private byLength = new Map<number, string[]>()
@@ -7,14 +9,18 @@ export class Dictionary {
     const res = await fetch(url)
     if (!res.ok) throw new Error('Failed to load dictionary')
     const text = await res.text()
-    const lines = text.split(/\r?\n/)
+    this.loadFromText(text)
+  }
+
+  loadFromText(text: string): void {
     const byLength = new Map<number, string[]>()
     const words = new Set<string>()
 
-    for (const raw of lines) {
+    for (const raw of text.split(/\r?\n/)) {
       const w = raw.trim().toUpperCase()
       if (w.length < 2 || w.length > 15) continue
       if (!/^[A-Z]+$/.test(w)) continue
+      if (w.length === 2 && !SCRABBLE_TWO_LETTER_WORDS.has(w)) continue
       words.add(w)
       const list = byLength.get(w.length)
       if (list) list.push(w)

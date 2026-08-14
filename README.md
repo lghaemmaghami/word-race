@@ -17,3 +17,4 @@ Open the local URL, choose **Easy** or **Hard**, and race the clock.
 - Full-board rearrange before submit; no locked tiles
 - Delta scoring: `max(0, newBoardScore - previousBoardScore)`
 - AI must move within 5 seconds or swap/pass
+- Dictionary is ENABLE plus official Scrabble two-letter words (junk like IR/CS is rejected)

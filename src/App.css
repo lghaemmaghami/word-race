@@ -74,33 +74,22 @@
   transform: translateY(-1px);
 }
 
-.btn-primary {
+.btn-primary,
+.btn-secondary,
+.btn-ghost {
   background: #ab87ff;
   color: #333138;
   font-weight: 700;
+  border-color: #ab87ff;
+  border-radius: 999px;
+  padding: 0.85rem 1.4rem;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: #fffffa;
-}
-
-.btn-secondary {
-  background: transparent;
-  border-color: #4fb477;
-  color: #4fb477;
-  font-weight: 600;
-}
-
-.btn-ghost {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--line);
-  color: var(--sand);
-  border-radius: 12px;
-  padding: 0.7rem 0.95rem;
-}
-
+.btn-primary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled),
 .btn-ghost:hover:not(:disabled) {
-  border-color: var(--lime);
+  background: #fffffa;
+  border-color: #fffffa;
 }
 
 .status-line {
@@ -268,17 +257,21 @@
 }
 
 .turn-banner {
-  text-align: center;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  background: #4fb477;
-  border: 1px solid var(--line);
-  font-size: 0.92rem;
+  text-align: left;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #4fb477;
   flex: 1;
 }
 
 .turn-banner[data-turn='ai'] {
-  background: #3083dc;
+  background: transparent;
+  color: #3083dc;
 }
 
 .game-screen .status-line {
@@ -390,8 +383,8 @@
   position: absolute;
   right: 2px;
   bottom: 1px;
-  font-size: clamp(0.4rem, 1.2vw, 0.55rem);
-  font-weight: 600;
+  font-size: clamp(0.52rem, 1.7vw, 0.72rem);
+  font-weight: 700;
 }
 
 .cell.is-new .tile {
@@ -933,8 +926,8 @@
   }
 
   .turn-banner {
-    padding: 0.2rem 0.55rem;
-    font-size: 0.78rem;
+    padding: 0;
+    font-size: 0.82rem;
   }
 
   .meta-line {
@@ -986,7 +979,7 @@
   }
 
   .tile-value {
-    font-size: clamp(0.3rem, 1.4vw, 0.45rem);
+    font-size: clamp(0.42rem, 2vw, 0.6rem);
     right: 1px;
     bottom: 0;
   }
@@ -1015,19 +1008,16 @@
   }
 
   .game-screen .btn {
-    padding: 0.45rem 0.55rem;
+    padding: 0.45rem 0.7rem;
     font-size: 0.82rem;
-    border-radius: 10px;
+    border-radius: 999px;
   }
 
-  .game-screen .btn-primary {
-    flex: 1 1 auto;
-    min-width: 4.5rem;
-  }
-
+  .game-screen .btn-primary,
   .game-screen .btn-ghost {
-    flex: 0 0 auto;
-    padding: 0.45rem 0.5rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.45rem 0.7rem;
   }
 
   /* Start / end can scroll if needed; keep brand readable */

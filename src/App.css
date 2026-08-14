@@ -613,9 +613,11 @@
   .board {
     --gap: 1px;
     --pad: 3px;
+    /* Width-first; cap with svh so Safari chrome never forces overflow.
+       Avoid % height here — it circularly collapses the grid. */
     --cell: min(
       calc((100vw - 1.1rem - 2 * var(--pad) - 14 * var(--gap)) / 15),
-      calc((100% - 2 * var(--pad) - 14 * var(--gap)) / 15)
+      calc((100svh - 12.75rem) / 15)
     );
     border-radius: 8px;
     box-shadow: none;

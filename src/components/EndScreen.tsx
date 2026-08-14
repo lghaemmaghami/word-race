@@ -81,8 +81,14 @@ export function EndScreen({
 }: EndScreenProps) {
   const diff = playerScore - aiScore
   const leaders = loadLeaderboard()
-  const yours = playedWords.filter((w) => w.by === 'player')
-  const theirs = playedWords.filter((w) => w.by === 'ai')
+  const yours = playedWords
+    .filter((w) => w.by === 'player')
+    .slice()
+    .sort((a, b) => b.score - a.score || a.word.localeCompare(b.word))
+  const theirs = playedWords
+    .filter((w) => w.by === 'ai')
+    .slice()
+    .sort((a, b) => b.score - a.score || a.word.localeCompare(b.word))
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
 
   return (

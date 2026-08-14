@@ -1,8 +1,6 @@
-import { useMemo } from 'react'
 import { formatDifficulty, loadLeaderboard } from '../game/leaderboard'
 import { letterValue } from '../game/constants'
-import { listAttributedWords, type AttributedWord } from '../game/scoring'
-import type { Board, Difficulty, TileOwner } from '../game/types'
+import type { Board, Difficulty, PlayedWord } from '../game/types'
 import { BoardView } from './BoardView'
 
 interface EndScreenProps {
@@ -11,12 +9,12 @@ interface EndScreenProps {
   aiScore: number
   difficulty: Difficulty
   board: Board
-  tileOwners: Record<string, TileOwner>
+  playedWords: PlayedWord[]
   onPlayAgain: () => void
   onHome: () => void
 }
 
-function WordColumn({ title, words, tone }: { title: string; words: AttributedWord[]; tone: 'player' | 'ai' }) {
+function WordColumn({ title, words, tone }: { title: string; words: PlayedWord[]; tone: 'player' | 'ai' }) {
   const total = words.reduce((sum, w) => sum + w.score, 0)
   return (
     <div className={`word-column ${tone}`}>
@@ -47,16 +45,14 @@ export function EndScreen({
   aiScore,
   difficulty,
   board,
-  tileOwners,
+  playedWords,
   onPlayAgain,
   onHome,
 }: EndScreenProps) {
   const diff = playerScore - aiScore
   const leaders = loadLeaderboard()
-  const words = useMemo(() => listAttributedWords(board, tileOwners), [board, tileOwners])
-  const yours = words.filter((w) => w.by === 'player')
-  const theirs = words.filter((w) => w.by === 'ai')
-  const boardTotal = words.reduce((sum, w) => sum + w.score, 0)
+  const yours = playedWords.filter((w) => w.by === 'player')
+  const theirs = playedWords.filter((w) => w.by === 'ai')
 
   return (
     <div className="screen end-screen">
@@ -94,8 +90,8 @@ export function EndScreen({
 
         <div className="word-list">
           <h2>Words played</h2>
-          <p className="leaderboard-note">Credited to whoever placed more tiles in the word</p>
-          {words.length === 0 ? (
+          <p className="leaderboard-note">Whoever placed the last tile and scored the word</p>
+          {playedWords.length === 0 ? (
             <p className="status-line">No words were played.</p>
           ) : (
             <div className="word-columns">
@@ -103,12 +99,6 @@ export function EndScreen({
               <WordColumn title="AI" words={theirs} tone="ai" />
             </div>
           )}
-          {words.length > 0 ? (
-            <p className="word-list-total">
-              <span>Board total</span>
-              <strong>{boardTotal}</strong>
-            </p>
-          ) : null}
         </div>
       </section>
 

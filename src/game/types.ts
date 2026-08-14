@@ -18,6 +18,12 @@ export interface GameScores {
   ai: number
 }
 
+export interface PlayedWord {
+  word: string
+  score: number
+  by: TileOwner
+}
+
 export interface AiMoveSummary {
   type: 'play' | 'swap' | 'pass'
   word?: string

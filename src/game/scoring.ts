@@ -67,6 +67,18 @@ export function scoreWord(board: Board, cells: Array<{ row: number; col: number 
   return letterSum * wordMult
 }
 
+export interface ScoredWord {
+  word: string
+  score: number
+}
+
+/** Every 2+ letter word on the board with its current multiplier score, highest first. */
+export function listScoredWords(board: Board): ScoredWord[] {
+  return extractWords(board)
+    .map((w) => ({ word: w.word, score: scoreWord(board, w.cells) }))
+    .sort((a, b) => b.score - a.score || a.word.localeCompare(b.word))
+}
+
 /** Total score of every 2+ letter word on the board (multipliers always applied by position). */
 export function scoreFullBoard(board: Board): number {
   const words = extractWords(board)

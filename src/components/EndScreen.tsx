@@ -1,11 +1,16 @@
+import { useMemo } from 'react'
 import { formatDifficulty, loadLeaderboard } from '../game/leaderboard'
-import type { Difficulty } from '../game/types'
+import { letterValue } from '../game/constants'
+import { listScoredWords } from '../game/scoring'
+import type { Board, Difficulty } from '../game/types'
+import { BoardView } from './BoardView'
 
 interface EndScreenProps {
   won: boolean
   playerScore: number
   aiScore: number
   difficulty: Difficulty
+  board: Board
   onPlayAgain: () => void
   onHome: () => void
 }
@@ -15,11 +20,14 @@ export function EndScreen({
   playerScore,
   aiScore,
   difficulty,
+  board,
   onPlayAgain,
   onHome,
 }: EndScreenProps) {
   const diff = playerScore - aiScore
   const leaders = loadLeaderboard()
+  const words = useMemo(() => listScoredWords(board), [board])
+  const boardTotal = words.reduce((sum, w) => sum + w.score, 0)
 
   return (
     <div className="screen end-screen">
@@ -49,6 +57,35 @@ export function EndScreen({
           <strong>{formatDifficulty(difficulty)}</strong>
         </div>
       </div>
+
+      <section className="end-recap" aria-label="Final board and words">
+        <div className="board-wrap recap-board">
+          <BoardView board={board} letterValue={letterValue} readOnly />
+        </div>
+
+        <div className="word-list">
+          <h2>Words played</h2>
+          <p className="leaderboard-note">Each word's score on the final board</p>
+          {words.length === 0 ? (
+            <p className="status-line">No words were played.</p>
+          ) : (
+            <ol>
+              {words.map((w, i) => (
+                <li key={`${w.word}-${i}`}>
+                  <span className="word">{w.word}</span>
+                  <span className="pts">{w.score}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+          {words.length > 0 ? (
+            <p className="word-list-total">
+              <span>Board total</span>
+              <strong>{boardTotal}</strong>
+            </p>
+          ) : null}
+        </div>
+      </section>
 
       <div className="difficulty-actions">
         <button type="button" className="btn btn-primary" onClick={onPlayAgain}>

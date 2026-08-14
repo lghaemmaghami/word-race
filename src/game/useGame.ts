@@ -116,6 +116,7 @@ export function useGame() {
       difficulty: diff,
     })
     setTurn('player')
+    setBoard(cloneBoard(stateRef.current.committedBoard))
     setScreen('end')
   }, [])
 

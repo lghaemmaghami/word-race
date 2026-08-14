@@ -5,25 +5,25 @@
   --moss: #5b9279;
   --char: #252627;
 
-  --ink: var(--char);
-  --ink-2: color-mix(in srgb, var(--char) 82%, var(--moss));
-  --panel: color-mix(in srgb, var(--moss) 22%, rgba(37, 38, 39, 0.82));
-  --line: color-mix(in srgb, var(--mist) 28%, transparent);
-  --lime: var(--moss);
-  --lime-deep: color-mix(in srgb, var(--moss) 78%, var(--char));
-  --sand: var(--mist);
-  --sand-dim: color-mix(in srgb, var(--mist) 72%, transparent);
-  --danger: var(--pink);
-  --tile: var(--mist);
-  --tile-ink: var(--char);
-  --dl: var(--blue);
-  --tl: color-mix(in srgb, var(--blue) 72%, var(--char));
-  --dw: var(--pink);
-  --tw: color-mix(in srgb, var(--pink) 70%, var(--char));
+  --ink: #252627;
+  --ink-2: #252627;
+  --panel: #5b9279;
+  --line: #cdd1c4;
+  --lime: #5b9279;
+  --lime-deep: #5b9279;
+  --sand: #cdd1c4;
+  --sand-dim: #cdd1c4;
+  --danger: #ffafc5;
+  --tile: #cdd1c4;
+  --tile-ink: #252627;
+  --dl: #677db7;
+  --tl: #677db7;
+  --dw: #ffafc5;
+  --tw: #ffafc5;
   --font-display: 'Bebas Neue', sans-serif;
   --font-body: 'Outfit', sans-serif;
-  color: var(--sand);
-  background: var(--ink);
+  color: #cdd1c4;
+  background: #252627;
   font-family: var(--font-body);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -46,9 +46,10 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   background:
-    radial-gradient(1200px 600px at 10% -10%, color-mix(in srgb, var(--moss) 28%, transparent), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, color-mix(in srgb, var(--blue) 26%, transparent), transparent 50%),
-    linear-gradient(160deg, var(--char) 0%, color-mix(in srgb, var(--char) 78%, var(--moss)) 52%, color-mix(in srgb, var(--char) 70%, var(--blue)) 100%);
+    radial-gradient(1100px 560px at 8% -8%, #ffafc5 0%, transparent 58%),
+    radial-gradient(900px 520px at 100% 0%, #677db7 0%, transparent 55%),
+    radial-gradient(800px 480px at 50% 110%, #5b9279 0%, transparent 50%),
+    #252627;
   background-attachment: fixed;
   overscroll-behavior: none;
 }

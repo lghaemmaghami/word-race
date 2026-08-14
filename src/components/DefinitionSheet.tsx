@@ -58,7 +58,9 @@ export function DefinitionSheet({ word, onClose }: DefinitionSheetProps) {
 
         {status === 'loading' ? <p className="def-status">Looking up {word}…</p> : null}
         {status === 'missing' ? (
-          <p className="def-status">No definition found for {word}.</p>
+          <p className="def-status">
+            Couldn&apos;t load a definition for {word} right now. Check your connection and try again.
+          </p>
         ) : null}
         {status === 'ready' && def ? (
           <ol className="def-senses">

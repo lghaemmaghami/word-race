@@ -1,29 +1,29 @@
 :root {
-  --blue: #677db7;
-  --pink: #ffafc5;
-  --mist: #cdd1c4;
-  --moss: #5b9279;
-  --char: #252627;
+  --green: #4fb477;
+  --blue: #3083dc;
+  --purple: #ab87ff;
+  --ivory: #fffffa;
+  --char: #333138;
 
-  --ink: #252627;
-  --ink-2: #252627;
-  --panel: #5b9279;
-  --line: #cdd1c4;
-  --lime: #5b9279;
-  --lime-deep: #5b9279;
-  --sand: #cdd1c4;
-  --sand-dim: #cdd1c4;
-  --danger: #ffafc5;
-  --tile: #cdd1c4;
-  --tile-ink: #252627;
-  --dl: #677db7;
-  --tl: #677db7;
-  --dw: #ffafc5;
-  --tw: #ffafc5;
+  --ink: #333138;
+  --ink-2: #333138;
+  --panel: #333138;
+  --line: #fffffa;
+  --lime: #4fb477;
+  --lime-deep: #4fb477;
+  --sand: #fffffa;
+  --sand-dim: #fffffa;
+  --danger: #ab87ff;
+  --tile: #fffffa;
+  --tile-ink: #333138;
+  --dl: #3083dc;
+  --tl: #4fb477;
+  --dw: #ab87ff;
+  --tw: #ab87ff;
   --font-display: 'Bebas Neue', sans-serif;
   --font-body: 'Outfit', sans-serif;
-  color: #cdd1c4;
-  background: #252627;
+  color: #fffffa;
+  background: #333138;
   font-family: var(--font-body);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -46,10 +46,10 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   background:
-    radial-gradient(1100px 560px at 8% -8%, #ffafc5 0%, transparent 58%),
-    radial-gradient(900px 520px at 100% 0%, #677db7 0%, transparent 55%),
-    radial-gradient(800px 480px at 50% 110%, #5b9279 0%, transparent 50%),
-    #252627;
+    radial-gradient(900px 520px at 100% 0%, #3083dc 0%, transparent 55%),
+    radial-gradient(800px 480px at 0% 110%, #4fb477 0%, transparent 50%),
+    radial-gradient(520px 360px at 50% -12%, #ab87ff 0%, transparent 48%),
+    #333138;
   background-attachment: fixed;
   overscroll-behavior: none;
 }

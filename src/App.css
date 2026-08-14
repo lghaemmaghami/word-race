@@ -53,7 +53,7 @@
   position: absolute;
   inset: 8% 10% auto;
   height: 280px;
-  background: radial-gradient(circle, #ffafc5, transparent 70%);
+  background: radial-gradient(circle, #ab87ff, transparent 70%);
   filter: blur(8px);
   pointer-events: none;
   animation: pulse 4s ease-in-out infinite;
@@ -81,19 +81,19 @@
 }
 
 .btn-primary {
-  background: #ffafc5;
-  color: #252627;
+  background: #ab87ff;
+  color: #333138;
   font-weight: 700;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #cdd1c4;
+  background: #fffffa;
 }
 
 .btn-secondary {
   background: transparent;
-  border-color: var(--lime);
-  color: var(--lime);
+  border-color: #4fb477;
+  color: #4fb477;
   font-weight: 600;
 }
 
@@ -130,8 +130,8 @@
   width: min(420px, 100%);
   margin: 2rem auto 0;
   padding: 1rem 1.1rem 1.2rem;
-  background: #252627;
-  border: 1px solid #cdd1c4;
+  background: #333138;
+  border: 1px solid #fffffa;
   border-radius: 18px;
   animation: rise 0.7s ease 0.2s both;
 }
@@ -277,14 +277,14 @@
   text-align: center;
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  background: #5b9279;
+  background: #4fb477;
   border: 1px solid var(--line);
   font-size: 0.92rem;
   flex: 1;
 }
 
 .turn-banner[data-turn='ai'] {
-  background: #677db7;
+  background: #3083dc;
 }
 
 .game-screen .status-line {
@@ -317,7 +317,7 @@
   grid-template-rows: repeat(15, var(--cell));
   gap: var(--gap);
   padding: var(--pad);
-  background: #252627;
+  background: #333138;
   border: 1px solid var(--line);
   border-radius: 14px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
@@ -341,24 +341,27 @@
   border: none;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.04);
-  color: #cdd1c4;
+  color: #fffffa;
   cursor: pointer;
   display: grid;
   place-items: center;
 }
 
-.cell.mult-dl,
+.cell.mult-dl {
+  background: #3083dc;
+  color: #fffffa;
+}
 .cell.mult-tl {
-  background: #677db7;
-  color: #cdd1c4;
+  background: #4fb477;
+  color: #333138;
 }
 .cell.mult-dw,
 .cell.mult-tw {
-  background: #ffafc5;
-  color: #252627;
+  background: #ab87ff;
+  color: #333138;
 }
 .cell.is-center {
-  outline: 2px solid #ffafc5;
+  outline: 2px solid #ab87ff;
 }
 
 .mult-label {
@@ -373,7 +376,7 @@
   height: 100%;
   display: grid;
   place-items: center;
-  background: #cdd1c4;
+  background: #fffffa;
   color: var(--tile-ink);
   border-radius: 4px;
   position: relative;
@@ -458,7 +461,7 @@
 }
 
 .end-screen .result.win {
-  color: #ffafc5;
+  color: #4fb477;
 }
 
 .end-screen .result.loss {
@@ -481,21 +484,21 @@
 }
 
 .final-scores > div:nth-child(1) {
-  background: #5b9279;
+  background: #4fb477;
 }
 
 .final-scores > div:nth-child(2) {
-  background: #677db7;
+  background: #3083dc;
 }
 
 .final-scores > div:nth-child(3) {
-  background: #ffafc5;
-  color: #252627;
+  background: #ab87ff;
+  color: #333138;
 }
 
 .final-scores > div:nth-child(4) {
-  background: #cdd1c4;
-  color: #252627;
+  background: #fffffa;
+  color: #333138;
 }
 
 .final-scores span {
@@ -537,8 +540,8 @@
 .word-list {
   width: 100%;
   padding: 1rem 1.1rem 1.2rem;
-  background: #252627;
-  border: 1px solid #cdd1c4;
+  background: #333138;
+  border: 1px solid #fffffa;
   border-radius: 18px;
 }
 
@@ -605,12 +608,12 @@
 
 .word-list .pts {
   font-weight: 700;
-  color: #5b9279;
+  color: #4fb477;
   font-variant-numeric: tabular-nums;
 }
 
 .word-column.ai .pts {
-  color: #677db7;
+  color: #3083dc;
 }
 
 .word-list li {
@@ -636,14 +639,14 @@
 
 .word-row:hover,
 .word-row:focus-visible {
-  background: #ffafc5;
-  color: #252627;
+  background: #ab87ff;
+  color: #333138;
   outline: none;
 }
 
 .word-row:hover .pts,
 .word-row:focus-visible .pts {
-  color: #252627;
+  color: #333138;
 }
 
 .word-main {
@@ -682,16 +685,20 @@
   line-height: 1;
 }
 
-.bonus-dl,
+.bonus-dl {
+  background: #3083dc;
+  color: #fffffa;
+}
+
 .bonus-tl {
-  background: #677db7;
-  color: #cdd1c4;
+  background: #4fb477;
+  color: #333138;
 }
 
 .bonus-dw,
 .bonus-tw {
-  background: #ffafc5;
-  color: #252627;
+  background: #ab87ff;
+  color: #333138;
 }
 
 .def-overlay {
@@ -711,7 +718,7 @@
   max-height: min(78vh, 36rem);
   overflow: auto;
   padding: 1rem 1.1rem 1.2rem;
-  background: #252627;
+  background: #333138;
   border: 1px solid var(--line);
   border-radius: 18px 18px 14px 14px;
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.4);

@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { formatDifficulty, loadLeaderboard } from '../game/leaderboard'
 import { letterValue } from '../game/constants'
 import type { Board, Difficulty, PlayedWord } from '../game/types'
 import { BoardView } from './BoardView'
+import { DefinitionSheet } from './DefinitionSheet'
 
 interface EndScreenProps {
   won: boolean
@@ -14,7 +16,17 @@ interface EndScreenProps {
   onHome: () => void
 }
 
-function WordColumn({ title, words, tone }: { title: string; words: PlayedWord[]; tone: 'player' | 'ai' }) {
+function WordColumn({
+  title,
+  words,
+  tone,
+  onSelectWord,
+}: {
+  title: string
+  words: PlayedWord[]
+  tone: 'player' | 'ai'
+  onSelectWord: (word: string) => void
+}) {
   const total = words.reduce((sum, w) => sum + w.score, 0)
   return (
     <div className={`word-column ${tone}`}>
@@ -25,8 +37,15 @@ function WordColumn({ title, words, tone }: { title: string; words: PlayedWord[]
         <ol>
           {words.map((w, i) => (
             <li key={`${w.word}-${i}`}>
-              <span className="word">{w.word}</span>
-              <span className="pts">{w.score}</span>
+              <button
+                type="button"
+                className="word-row"
+                onClick={() => onSelectWord(w.word)}
+                aria-label={`Define ${w.word}`}
+              >
+                <span className="word">{w.word}</span>
+                <span className="pts">{w.score}</span>
+              </button>
             </li>
           ))}
         </ol>
@@ -53,6 +72,7 @@ export function EndScreen({
   const leaders = loadLeaderboard()
   const yours = playedWords.filter((w) => w.by === 'player')
   const theirs = playedWords.filter((w) => w.by === 'ai')
+  const [selectedWord, setSelectedWord] = useState<string | null>(null)
 
   return (
     <div className="screen end-screen">
@@ -90,13 +110,13 @@ export function EndScreen({
 
         <div className="word-list">
           <h2>Words played</h2>
-          <p className="leaderboard-note">Whoever placed the last tile and scored the word</p>
+          <p className="leaderboard-note">Tap a word for its definition</p>
           {playedWords.length === 0 ? (
             <p className="status-line">No words were played.</p>
           ) : (
             <div className="word-columns">
-              <WordColumn title="You" words={yours} tone="player" />
-              <WordColumn title="AI" words={theirs} tone="ai" />
+              <WordColumn title="You" words={yours} tone="player" onSelectWord={setSelectedWord} />
+              <WordColumn title="AI" words={theirs} tone="ai" onSelectWord={setSelectedWord} />
             </div>
           )}
         </div>
@@ -130,6 +150,8 @@ export function EndScreen({
           </ol>
         )}
       </section>
+
+      {selectedWord ? <DefinitionSheet word={selectedWord} onClose={() => setSelectedWord(null)} /> : null}
     </div>
   )
 }

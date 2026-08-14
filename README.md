@@ -1,1 +1,1 @@
-# speed-words
+# word-race

@@ -351,33 +351,30 @@ export function useGame() {
       const cell = s.board[row][col]
 
       if (selectedTileId) {
-        const fromRack = s.playerRack.find((t) => t.id === selectedTileId)
-        const fromBoard = findTileOnBoard(s.board, selectedTileId)
         if (cell && cell.id === selectedTileId) {
           setSelectedTileId(null)
+          setSelectedCell(null)
           return
         }
 
+        if (cell) {
+          setMessage('That square already has a tile')
+          return
+        }
+
+        const fromRack = s.playerRack.find((t) => t.id === selectedTileId)
+        const fromBoard = findTileOnBoard(s.board, selectedTileId)
         const next = cloneBoard(s.board)
         let nextRack = [...s.playerRack]
 
         if (fromRack) {
-          if (cell) {
-            nextRack = nextRack.filter((t) => t.id !== selectedTileId)
-            nextRack.push(cell)
-            next[row][col] = fromRack
-          } else {
-            nextRack = nextRack.filter((t) => t.id !== selectedTileId)
-            next[row][col] = fromRack
-          }
+          nextRack = nextRack.filter((t) => t.id !== selectedTileId)
+          next[row][col] = fromRack
         } else if (fromBoard) {
-          if (cell) {
-            next[fromBoard.row][fromBoard.col] = cell
-            next[row][col] = s.board[fromBoard.row][fromBoard.col]
-          } else {
-            next[row][col] = s.board[fromBoard.row][fromBoard.col]
-            next[fromBoard.row][fromBoard.col] = null
-          }
+          next[row][col] = s.board[fromBoard.row][fromBoard.col]
+          next[fromBoard.row][fromBoard.col] = null
+        } else {
+          return
         }
 
         setBoard(next)

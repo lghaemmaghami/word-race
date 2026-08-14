@@ -41,9 +41,20 @@ function WordColumn({
                 type="button"
                 className="word-row"
                 onClick={() => onSelectWord(w.word)}
-                aria-label={`Define ${w.word}`}
+                aria-label={`Define ${w.word}${w.bonuses.length ? `, bonuses ${w.bonuses.join(' ')}` : ''}`}
               >
-                <span className="word">{w.word}</span>
+                <span className="word-main">
+                  <span className="word">{w.word}</span>
+                  {w.bonuses.length > 0 ? (
+                    <span className="bonus-row" aria-hidden="true">
+                      {w.bonuses.map((bonus, bi) => (
+                        <span key={`${bonus}-${bi}`} className={`bonus bonus-${bonus.toLowerCase()}`}>
+                          {bonus}
+                        </span>
+                      ))}
+                    </span>
+                  ) : null}
+                </span>
                 <span className="pts">{w.score}</span>
               </button>
             </li>

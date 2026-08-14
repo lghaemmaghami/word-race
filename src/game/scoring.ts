@@ -1,6 +1,6 @@
 import { BOARD_SIZE, CENTER, MULTIPLIERS, letterValue } from './constants'
 import { getOccupiedPositions } from './board'
-import type { Board } from './types'
+import type { Board, Multiplier } from './types'
 import type { Dictionary } from './dictionary'
 
 export interface ExtractedWord {
@@ -67,9 +67,29 @@ export function scoreWord(board: Board, cells: Array<{ row: number; col: number 
   return letterSum * wordMult
 }
 
+export type WordBonus = Exclude<Multiplier, 'none'>
+
+export function bonusesOnWord(cells: Array<{ row: number; col: number }>): WordBonus[] {
+  const bonuses: WordBonus[] = []
+  for (const { row, col } of cells) {
+    const m = MULTIPLIERS[row][col]
+    if (m !== 'none') bonuses.push(m)
+  }
+  return bonuses
+}
+
 export interface ScoredWord {
   word: string
   score: number
+  bonuses: WordBonus[]
+}
+
+function toScoredWord(board: Board, extracted: ExtractedWord): ScoredWord {
+  return {
+    word: extracted.word,
+    score: scoreWord(board, extracted.cells),
+    bonuses: bonusesOnWord(extracted.cells),
+  }
 }
 
 function sortScoredWords<T extends ScoredWord>(words: T[]): T[] {
@@ -78,9 +98,7 @@ function sortScoredWords<T extends ScoredWord>(words: T[]): T[] {
 
 /** Every 2+ letter word on the board with its current multiplier score, highest first. */
 export function listScoredWords(board: Board): ScoredWord[] {
-  return sortScoredWords(
-    extractWords(board).map((w) => ({ word: w.word, score: scoreWord(board, w.cells) })),
-  )
+  return sortScoredWords(extractWords(board).map((w) => toScoredWord(board, w)))
 }
 
 /** Words that include at least one of the given tiles, with scores at the current positions. */
@@ -93,7 +111,7 @@ export function listWordsCompletedByTiles(board: Board, tileIds: Set<string>): S
         return tile != null && tileIds.has(tile.id)
       }),
     )
-    .map((w) => ({ word: w.word, score: scoreWord(board, w.cells) }))
+    .map((w) => toScoredWord(board, w))
     .sort((a, b) => b.word.length - a.word.length || b.score - a.score || a.word.localeCompare(b.word))
 }
 

@@ -595,11 +595,11 @@
 .word-row {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.45rem;
   width: 100%;
   margin: 0;
-  padding: 0.5rem 0.65rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.55rem;
   border: none;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.18);
@@ -614,6 +614,14 @@
   outline: 1px solid var(--lime);
 }
 
+.word-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.22rem 0.28rem;
+  min-width: 0;
+}
+
 .word-list .word {
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -622,6 +630,41 @@
   text-decoration: underline;
   text-decoration-style: dotted;
   text-underline-offset: 0.18em;
+}
+
+.bonus-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.16rem;
+}
+
+.bonus {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35rem;
+  padding: 0.08rem 0.22rem;
+  border-radius: 3px;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: #fff;
+}
+
+.bonus-dl {
+  background: var(--dl);
+}
+
+.bonus-tl {
+  background: var(--tl);
+}
+
+.bonus-dw {
+  background: var(--dw);
+}
+
+.bonus-tw {
+  background: var(--tw);
 }
 
 .word-list .pts {
@@ -993,6 +1036,12 @@
 
   .word-list .word {
     font-size: 0.78rem;
+  }
+
+  .bonus {
+    min-width: 1.2rem;
+    padding: 0.06rem 0.16rem;
+    font-size: 0.46rem;
   }
 
   .brand-block {

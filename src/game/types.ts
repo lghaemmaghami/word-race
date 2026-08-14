@@ -22,6 +22,7 @@ export interface PlayedWord {
   word: string
   score: number
   by: TileOwner
+  bonuses: Array<Exclude<Multiplier, 'none'>>
 }
 
 export interface AiMoveSummary {

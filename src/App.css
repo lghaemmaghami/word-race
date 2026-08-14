@@ -50,13 +50,7 @@
 }
 
 .hero-glow {
-  position: absolute;
-  inset: 8% 10% auto;
-  height: 280px;
-  background: radial-gradient(circle, #ab87ff, transparent 70%);
-  filter: blur(8px);
-  pointer-events: none;
-  animation: pulse 4s ease-in-out infinite;
+  display: none;
 }
 
 .difficulty-actions {
@@ -348,17 +342,20 @@
 }
 
 .cell.mult-dl {
-  background: #3083dc;
+  background: #5a8fc4;
   color: #fffffa;
 }
 .cell.mult-tl {
-  background: #4fb477;
+  background: #6aa887;
   color: #333138;
 }
-.cell.mult-dw,
-.cell.mult-tw {
-  background: #ab87ff;
+.cell.mult-dw {
+  background: #9a88d4;
   color: #333138;
+}
+.cell.mult-tw {
+  background: #222a68;
+  color: #fffffa;
 }
 .cell.is-center {
   outline: 2px solid #ab87ff;
@@ -376,11 +373,11 @@
   height: 100%;
   display: grid;
   place-items: center;
-  background: #fffffa;
+  background: #e8e8e2;
   color: var(--tile-ink);
   border-radius: 4px;
   position: relative;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .tile-letter {
@@ -686,19 +683,23 @@
 }
 
 .bonus-dl {
-  background: #3083dc;
+  background: #5a8fc4;
   color: #fffffa;
 }
 
 .bonus-tl {
-  background: #4fb477;
+  background: #6aa887;
   color: #333138;
 }
 
-.bonus-dw,
-.bonus-tw {
-  background: #ab87ff;
+.bonus-dw {
+  background: #9a88d4;
   color: #333138;
+}
+
+.bonus-tw {
+  background: #222a68;
+  color: #fffffa;
 }
 
 .def-overlay {

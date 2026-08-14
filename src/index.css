@@ -16,10 +16,10 @@
   --danger: #ab87ff;
   --tile: #fffffa;
   --tile-ink: #333138;
-  --dl: #3083dc;
-  --tl: #4fb477;
-  --dw: #ab87ff;
-  --tw: #ab87ff;
+  --dl: #5a8fc4;
+  --tl: #6aa887;
+  --dw: #9a88d4;
+  --tw: #222a68;
   --font-display: 'Bebas Neue', sans-serif;
   --font-body: 'Outfit', sans-serif;
   color: #fffffa;
@@ -45,12 +45,7 @@ body,
 body {
   min-height: 100vh;
   min-height: 100dvh;
-  background:
-    radial-gradient(900px 520px at 100% 0%, #3083dc 0%, transparent 55%),
-    radial-gradient(800px 480px at 0% 110%, #4fb477 0%, transparent 50%),
-    radial-gradient(520px 360px at 50% -12%, #ab87ff 0%, transparent 48%),
-    #333138;
-  background-attachment: fixed;
+  background: #333138;
   overscroll-behavior: none;
 }
 

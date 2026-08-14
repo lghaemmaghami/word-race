@@ -77,10 +77,10 @@
 .btn-primary,
 .btn-secondary,
 .btn-ghost {
-  background: #ab87ff;
-  color: #333138;
+  background: #222a68;
+  color: #fffffa;
   font-weight: 700;
-  border-color: #ab87ff;
+  border-color: #222a68;
   border-radius: 999px;
   padding: 0.85rem 1.4rem;
 }
@@ -88,8 +88,9 @@
 .btn-primary:hover:not(:disabled),
 .btn-secondary:hover:not(:disabled),
 .btn-ghost:hover:not(:disabled) {
-  background: #fffffa;
-  border-color: #fffffa;
+  background: #3083dc;
+  border-color: #3083dc;
+  color: #fffffa;
 }
 
 .status-line {
@@ -110,11 +111,11 @@
 }
 
 .leaderboard {
-  width: min(420px, 100%);
+  width: min(480px, 100%);
   margin: 2rem auto 0;
-  padding: 1rem 1.1rem 1.2rem;
-  background: #333138;
-  border: 1px solid #fffffa;
+  padding: 1.15rem 1rem 1.25rem;
+  background: #2a292e;
+  border: 1px solid rgba(255, 255, 250, 0.28);
   border-radius: 18px;
   animation: rise 0.7s ease 0.2s both;
 }
@@ -123,13 +124,14 @@
   margin: 0;
   font-family: var(--font-display);
   letter-spacing: 0.06em;
-  font-size: 1.8rem;
+  font-size: 1.9rem;
+  color: #fffffa;
 }
 
 .leaderboard-note {
-  margin: 0.15rem 0 0.75rem;
-  color: var(--sand-dim);
-  font-size: 0.85rem;
+  margin: 0.2rem 0 0.9rem;
+  color: rgba(255, 255, 250, 0.72);
+  font-size: 0.9rem;
 }
 
 .leaderboard ol {
@@ -137,38 +139,69 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.45rem;
+  gap: 0.5rem;
 }
 
 .leaderboard li {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.65rem;
+  grid-template-columns: 2rem 3.4rem 1fr;
+  gap: 0.55rem;
   align-items: center;
-  padding: 0.55rem 0.65rem;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.18);
+  padding: 0.7rem 0.8rem;
+  border-radius: 12px;
+  background: #333138;
+  border: 1px solid rgba(255, 255, 250, 0.12);
+}
+
+.leaderboard li.is-top {
+  border-color: #4fb477;
+  background: #38363c;
 }
 
 .leaderboard.preview li {
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 3.8rem 1fr;
+}
+
+.leaderboard .rank {
+  width: auto;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 250, 0.7);
 }
 
 .leaderboard .pts,
 .leaderboard.preview li span:first-child {
-  font-weight: 700;
-  color: var(--lime);
-}
-
-.leaderboard .rank {
-  width: 1.4rem;
-  color: var(--sand-dim);
+  font-weight: 800;
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  color: #4fb477;
 }
 
 .leaderboard .detail,
 .leaderboard.preview li span:last-child {
-  color: var(--sand-dim);
-  font-size: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.28rem;
+  color: #fffffa;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.leaderboard .detail-sep {
+  color: rgba(255, 255, 250, 0.45);
+}
+
+.leaderboard .detail-win {
+  color: #4fb477;
+  font-weight: 700;
+}
+
+.leaderboard .detail-loss {
+  color: #ab87ff;
+  font-weight: 700;
 }
 
 .game-hud {

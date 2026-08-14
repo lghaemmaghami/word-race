@@ -160,7 +160,11 @@ export function EndScreen({
                 <span className="rank">{i + 1}</span>
                 <span className="pts">{e.playerScore}</span>
                 <span className="detail">
-                  vs {e.aiScore} · {formatDifficulty(e.difficulty)} · {e.won ? 'Win' : 'Loss'}
+                  <span className="detail-vs">vs {e.aiScore}</span>
+                  <span className="detail-sep">·</span>
+                  <span>{formatDifficulty(e.difficulty)}</span>
+                  <span className="detail-sep">·</span>
+                  <span className={e.won ? 'detail-win' : 'detail-loss'}>{e.won ? 'Win' : 'Loss'}</span>
                 </span>
               </li>
             ))}

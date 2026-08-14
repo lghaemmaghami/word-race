@@ -73,11 +73,19 @@ interface RackViewProps {
   rack: Tile[]
   selectedTileId: string | null
   onSelect: (id: string) => void
+  onEmptySlotClick?: () => void
   letterValue: (letter: string) => number
   disabled?: boolean
 }
 
-export function RackView({ rack, selectedTileId, onSelect, letterValue, disabled }: RackViewProps) {
+export function RackView({
+  rack,
+  selectedTileId,
+  onSelect,
+  onEmptySlotClick,
+  letterValue,
+  disabled,
+}: RackViewProps) {
   return (
     <div className="rack" aria-label="Your rack">
       {rack.map((tile) => (
@@ -93,7 +101,14 @@ export function RackView({ rack, selectedTileId, onSelect, letterValue, disabled
         </button>
       ))}
       {Array.from({ length: Math.max(0, 7 - rack.length) }).map((_, i) => (
-        <div key={`empty-${i}`} className="rack-slot" />
+        <button
+          key={`empty-${i}`}
+          type="button"
+          className="rack-slot"
+          aria-label="Return tile to rack"
+          onClick={onEmptySlotClick}
+          disabled={disabled || !onEmptySlotClick}
+        />
       ))}
     </div>
   )

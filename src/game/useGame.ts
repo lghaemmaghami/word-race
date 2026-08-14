@@ -335,14 +335,39 @@ export function useGame() {
     })
   }, [turn, screen, runAi])
 
+  const returnUncommittedToRack = useCallback((tileId: string): boolean => {
+    if (turn !== 'player') return false
+    const s = stateRef.current
+    if (boardTileIds(s.committedBoard).has(tileId)) return false
+    const loc = findTileOnBoard(s.board, tileId)
+    if (!loc) return false
+    const tile = s.board[loc.row][loc.col]
+    if (!tile) return false
+
+    const next = cloneBoard(s.board)
+    next[loc.row][loc.col] = null
+    setBoard(next)
+    setPlayerRack(mergeRack(s.playerRack, [tile]))
+    setSelectedTileId(null)
+    setSelectedCell(null)
+    setMessage(null)
+    return true
+  }, [turn])
+
   const selectRackTile = useCallback(
     (id: string) => {
       if (turn !== 'player') return
+      if (selectedTileId && returnUncommittedToRack(selectedTileId)) return
       setSelectedTileId((cur) => (cur === id ? null : id))
       setSelectedCell(null)
     },
-    [turn],
+    [turn, selectedTileId, returnUncommittedToRack],
   )
+
+  const returnSelectedToRack = useCallback(() => {
+    if (!selectedTileId) return
+    returnUncommittedToRack(selectedTileId)
+  }, [selectedTileId, returnUncommittedToRack])
 
   const selectCell = useCallback(
     (row: number, col: number) => {
@@ -352,8 +377,10 @@ export function useGame() {
 
       if (selectedTileId) {
         if (cell && cell.id === selectedTileId) {
-          setSelectedTileId(null)
-          setSelectedCell(null)
+          if (!returnUncommittedToRack(cell.id)) {
+            setSelectedTileId(null)
+            setSelectedCell(null)
+          }
           return
         }
 
@@ -392,7 +419,7 @@ export function useGame() {
         setSelectedCell({ row, col })
       }
     },
-    [turn, selectedTileId],
+    [turn, selectedTileId, returnUncommittedToRack],
   )
 
   const playAgain = useCallback(() => startGame(difficulty), [startGame, difficulty])
@@ -422,6 +449,7 @@ export function useGame() {
     startGame,
     selectRackTile,
     selectCell,
+    returnSelectedToRack,
     submit,
     recall,
     shuffleRack,

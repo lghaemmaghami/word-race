@@ -427,8 +427,11 @@
 .rack-slot {
   width: clamp(40px, 10vw, 52px);
   height: clamp(40px, 10vw, 52px);
+  padding: 0;
   border-radius: 8px;
   border: 1px dashed var(--line);
+  background: transparent;
+  cursor: pointer;
 }
 
 .action-bar {

@@ -57,6 +57,7 @@ export function GameScreen({ game }: { game: Game }) {
           rack={game.playerRack}
           selectedTileId={game.selectedTileId}
           onSelect={game.selectRackTile}
+          onEmptySlotClick={game.returnSelectedToRack}
           letterValue={game.letterValue}
           disabled={!playerTurn}
         />

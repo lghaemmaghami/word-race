@@ -118,6 +118,15 @@ export interface BoardValidation {
 }
 
 export function validateBoard(board: Board, dict: Dictionary): BoardValidation {
+  if (!dict.loaded || dict.size === 0) {
+    return {
+      ok: false,
+      reason: 'Dictionary is still loading. Wait a moment and submit again.',
+      words: [],
+      boardScore: 0,
+    }
+  }
+
   const occupied = getOccupiedPositions(board)
   if (occupied.length === 0) {
     return { ok: false, reason: 'Board is empty.', words: [], boardScore: 0 }

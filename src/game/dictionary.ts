@@ -1,15 +1,23 @@
 import { SCRABBLE_TWO_LETTER_WORDS } from './twoLetterWords'
 
+const MIN_DICTIONARY_SIZE = 10_000
+
 export class Dictionary {
   private words = new Set<string>()
   private byLength = new Map<number, string[]>()
   loaded = false
 
   async load(url = '/dictionary.txt'): Promise<void> {
-    const res = await fetch(url)
+    if (this.loaded && this.words.size >= MIN_DICTIONARY_SIZE) return
+
+    const res = await fetch(`${url}${url.includes('?') ? '&' : '?'}v=enable1`, { cache: 'no-store' })
     if (!res.ok) throw new Error('Failed to load dictionary')
     const text = await res.text()
+    if (/^\s*</.test(text)) {
+      throw new Error('Dictionary download failed. Refresh and try again.')
+    }
     this.loadFromText(text)
+    if (!this.loaded) throw new Error('Dictionary was empty. Refresh and try again.')
   }
 
   loadFromText(text: string): void {
@@ -27,6 +35,11 @@ export class Dictionary {
       else byLength.set(w.length, [w])
     }
 
+    if (words.size < MIN_DICTIONARY_SIZE) {
+      this.loaded = false
+      return
+    }
+
     this.words = words
     this.byLength = byLength
     this.loaded = true
@@ -36,11 +49,14 @@ export class Dictionary {
     return this.words.has(word.toUpperCase())
   }
 
+  get size(): number {
+    return this.words.size
+  }
+
   wordsOfLength(len: number): string[] {
     return this.byLength.get(len) ?? []
   }
 
-  /** Words that can be formed using only the given letter multiset (and optional extra fixed letters elsewhere). */
   canFormFromRack(word: string, rackLetters: string[]): boolean {
     const avail = new Map<string, number>()
     for (const ch of rackLetters) {
@@ -55,4 +71,7 @@ export class Dictionary {
   }
 }
 
-export const dictionary = new Dictionary()
+const globalDict = globalThis as typeof globalThis & { __wordRaceDictionary?: Dictionary }
+
+export const dictionary = globalDict.__wordRaceDictionary ?? new Dictionary()
+globalDict.__wordRaceDictionary = dictionary

@@ -83,14 +83,23 @@ export function useGame() {
   }
 
   useEffect(() => {
-    if (dictionary.loaded) {
-      setDictReady(true)
-      return
-    }
-    dictionary
+    let cancelled = false
+    void dictionary
       .load()
-      .then(() => setDictReady(true))
-      .catch((e: Error) => setDictError(e.message || 'Dictionary failed to load'))
+      .then(() => {
+        if (!cancelled) {
+          setDictReady(dictionary.size > 0)
+          if (dictionary.size === 0) {
+            setDictError('Dictionary failed to load')
+          }
+        }
+      })
+      .catch((e: Error) => {
+        if (!cancelled) setDictError(e.message || 'Dictionary failed to load')
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const endGame = useCallback((pScore: number, aScore: number, diff: Difficulty) => {

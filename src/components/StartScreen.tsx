@@ -17,7 +17,7 @@ export function StartScreen({ dictReady, dictError, onStart }: StartScreenProps)
         <p className="eyebrow">Single-player crossword duel</p>
         <h1 className="brand">Word Race</h1>
         <p className="tagline">
-          Outscore the AI on a shared Scrabble-style board before your 90 seconds run out.
+          Outscore the AI on a shared crossword board before your 90 seconds run out.
         </p>
       </header>
 
@@ -49,7 +49,7 @@ export function StartScreen({ dictReady, dictError, onStart }: StartScreenProps)
           <ol>
             {leaders.map((e) => (
               <li key={e.id}>
-                <span>{e.playerScore} pts</span>
+                <span>{e.playerScore}</span>
                 <span>
                   {formatDifficulty(e.difficulty)} · {e.won ? 'Win' : 'Loss'}
                 </span>

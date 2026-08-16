@@ -4,6 +4,10 @@ Single-player word race against an AI on a shared 15×15 board.
 
 ## Play
 
+**Fixed URL:** https://lghaemmaghami.github.io/word-race/
+
+Local:
+
 ```bash
 npm install
 npm run dev

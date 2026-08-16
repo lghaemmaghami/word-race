@@ -4,6 +4,9 @@ import react from '@vitejs/plugin-react'
 // Cloudflare quick tunnels (and Cursor mobile previews) send a trycloudflare.com Host
 // header. Allow those hosts on both the dev server and `vite preview`.
 export default defineConfig({
+  // Project Pages URL: https://lghaemmaghami.github.io/word-race/
+  // Keep `/` locally so `npm run dev` still works at the root.
+  base: process.env.GITHUB_ACTIONS ? '/word-race/' : '/',
   plugins: [react()],
   server: {
     host: true,

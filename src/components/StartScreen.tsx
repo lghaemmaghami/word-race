@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import type { Difficulty } from '../game/types'
 import { formatDifficulty, loadLeaderboard } from '../game/leaderboard'
+import { InstructionsScreen } from './InstructionsScreen'
 
 interface StartScreenProps {
   dictReady: boolean
@@ -8,10 +10,33 @@ interface StartScreenProps {
 }
 
 export function StartScreen({ dictReady, dictError, onStart }: StartScreenProps) {
+  const [showInstructions, setShowInstructions] = useState(false)
   const leaders = loadLeaderboard().slice(0, 5)
+
+  useEffect(() => {
+    if (!showInstructions) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowInstructions(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showInstructions])
+
+  if (showInstructions) {
+    return <InstructionsScreen onBack={() => setShowInstructions(false)} />
+  }
 
   return (
     <div className="screen start-screen">
+      <button
+        type="button"
+        className="help-btn"
+        aria-label="How to play"
+        title="How to play"
+        onClick={() => setShowInstructions(true)}
+      >
+        ?
+      </button>
       <div className="hero-glow" aria-hidden />
       <header className="brand-block">
         <p className="eyebrow">Single-player crossword duel</p>

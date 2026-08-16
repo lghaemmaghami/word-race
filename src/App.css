@@ -49,8 +49,82 @@
   justify-content: center;
 }
 
+.help-btn {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 2;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 250, 0.28);
+  border-radius: 999px;
+  background: #222a68;
+  color: #fffffa;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  line-height: 1;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.help-btn:hover,
+.help-btn:focus-visible {
+  background: #3083dc;
+  border-color: #3083dc;
+  transform: translateY(-1px);
+  outline: none;
+}
+
 .hero-glow {
   display: none;
+}
+
+.instructions-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: rise 0.45s ease both;
+}
+
+.instructions-title {
+  font-size: clamp(3.2rem, 12vw, 5rem);
+}
+
+.instructions-panel {
+  width: min(34rem, 100%);
+  margin: 0 auto 1.25rem;
+  padding: 1.1rem 1.15rem 1.2rem;
+  background: #2a292e;
+  border: 1px solid rgba(255, 255, 250, 0.28);
+  border-radius: 18px;
+}
+
+.instructions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.instructions-list li {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.instructions-list strong {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.05em;
+  color: #4fb477;
+}
+
+.instructions-list span {
+  color: rgba(255, 255, 250, 0.86);
+  line-height: 1.45;
+  font-size: 0.95rem;
 }
 
 .difficulty-actions {
@@ -1054,9 +1128,35 @@
 
   /* Start / end can scroll if needed; keep brand readable */
   .start-screen,
-  .end-screen {
+  .end-screen,
+  .instructions-screen {
     min-height: 100svh;
     overflow: auto;
+  }
+
+  .help-btn {
+    top: 0.15rem;
+    right: 0.15rem;
+    width: 2.1rem;
+    height: 2.1rem;
+    font-size: 1.25rem;
+  }
+
+  .instructions-panel {
+    padding: 0.9rem 0.95rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .instructions-list {
+    gap: 0.7rem;
+  }
+
+  .instructions-list strong {
+    font-size: 1.15rem;
+  }
+
+  .instructions-list span {
+    font-size: 0.88rem;
   }
 
   .end-recap {

@@ -13,6 +13,9 @@ export interface WordDefinition {
 }
 
 const cache = new Map<string, WordDefinition>()
+const MAX_WORD_LEN = 15
+const MAX_TEXT_LEN = 500
+const WORD_RE = /^[a-z]+$/i
 
 interface DictionaryApiMeaning {
   partOfSpeech?: string
@@ -31,6 +34,13 @@ interface WiktionarySenseGroup {
   definitions?: Array<{ definition?: string }>
 }
 
+function sanitizeText(value: unknown, max = MAX_TEXT_LEN): string | null {
+  if (typeof value !== 'string') return null
+  const cleaned = stripHtml(value)
+  if (!cleaned) return null
+  return cleaned.slice(0, max)
+}
+
 function stripHtml(html: string): string {
   return html
     .replace(/<[^>]*>/g, ' ')
@@ -44,6 +54,12 @@ function stripHtml(html: string): string {
     .trim()
 }
 
+function normalizeLookupWord(word: string): string | null {
+  const key = word.trim().toLowerCase()
+  if (!key || key.length > MAX_WORD_LEN || !WORD_RE.test(key)) return null
+  return key
+}
+
 function fromTwoLetterFallback(word: string): WordDefinition | null {
   const def = TWO_LETTER_DEFINITIONS[word.toUpperCase()]
   if (!def) return null
@@ -55,12 +71,11 @@ function fromApi(entries: DictionaryApiEntry[], fallbackWord: string): WordDefin
   for (const entry of entries) {
     for (const meaning of entry.meanings ?? []) {
       for (const item of meaning.definitions ?? []) {
-        if (!item.definition) continue
-        senses.push({
-          partOfSpeech: meaning.partOfSpeech || 'unknown',
-          definition: item.definition,
-          example: item.example,
-        })
+        const definition = sanitizeText(item.definition)
+        if (!definition) continue
+        const partOfSpeech = sanitizeText(meaning.partOfSpeech, 40) || 'unknown'
+        const example = sanitizeText(item.example) ?? undefined
+        senses.push({ partOfSpeech, definition, example })
         if (senses.length >= 4) break
       }
       if (senses.length >= 4) break
@@ -68,27 +83,27 @@ function fromApi(entries: DictionaryApiEntry[], fallbackWord: string): WordDefin
     if (senses.length >= 4) break
   }
   if (senses.length === 0) return null
-  return {
-    word: (entries[0]?.word ?? fallbackWord).toUpperCase(),
-    phonetic: entries[0]?.phonetic,
-    senses,
-  }
+  const word = sanitizeText(entries[0]?.word, MAX_WORD_LEN)?.toUpperCase() ?? fallbackWord.toUpperCase()
+  const phonetic = sanitizeText(entries[0]?.phonetic, 80) ?? undefined
+  return { word, phonetic, senses }
 }
 
 function fromWiktionary(payload: Record<string, WiktionarySenseGroup[]>, word: string): WordDefinition | null {
+  if (!payload || typeof payload !== 'object') return null
   const groups = [...(payload.en ?? []), ...Object.values(payload).flat()]
   const senses: DefinitionSense[] = []
   const seen = new Set<string>()
 
   for (const group of groups) {
+    if (!group || typeof group !== 'object') continue
     const language = (group.language ?? '').toLowerCase()
     if (language && language !== 'english' && language !== 'translingual') continue
     for (const item of group.definitions ?? []) {
-      const definition = item.definition ? stripHtml(item.definition) : ''
+      const definition = item?.definition ? sanitizeText(item.definition) : null
       if (!definition || seen.has(definition)) continue
       seen.add(definition)
       senses.push({
-        partOfSpeech: (group.partOfSpeech || 'unknown').toLowerCase(),
+        partOfSpeech: (sanitizeText(group.partOfSpeech, 40) || 'unknown').toLowerCase(),
         definition,
       })
       if (senses.length >= 4) break
@@ -101,21 +116,32 @@ function fromWiktionary(payload: Record<string, WiktionarySenseGroup[]>, word: s
 }
 
 async function lookupFreeDictionary(word: string): Promise<WordDefinition | null> {
-  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`)
+  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer',
+  })
   if (!res.ok) return null
-  const data = (await res.json()) as DictionaryApiEntry[]
+  const data: unknown = await res.json()
   if (!Array.isArray(data)) return null
-  return fromApi(data, word)
+  return fromApi(data as DictionaryApiEntry[], word)
 }
 
 async function lookupWiktionary(word: string): Promise<WordDefinition | null> {
   const res = await fetch(
     `https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(word.toLowerCase())}`,
-    { headers: { Accept: 'application/json' } },
+    {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+    },
   )
   if (!res.ok) return null
-  const data = (await res.json()) as Record<string, WiktionarySenseGroup[]>
-  return fromWiktionary(data, word)
+  const data: unknown = await res.json()
+  if (!data || typeof data !== 'object') return null
+  return fromWiktionary(data as Record<string, WiktionarySenseGroup[]>, word)
 }
 
 /**
@@ -123,7 +149,7 @@ async function lookupWiktionary(word: string): Promise<WordDefinition | null> {
  * Order: Free Dictionary API → Wiktionary → local two-letter glosses.
  */
 export async function lookupDefinition(word: string): Promise<WordDefinition | null> {
-  const key = word.trim().toLowerCase()
+  const key = normalizeLookupWord(word)
   if (!key) return null
   const cached = cache.get(key)
   if (cached) return cached

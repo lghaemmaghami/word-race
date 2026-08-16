@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { canSwapFullRack, createBag, fillRack, shuffle, swapFullRack } from './bag'
 import { boardTileIds, cloneBoard, emptyBoard, findTileOnBoard, resetTileSeq } from './board'
-import { PLAYER_TIME_OPTIONS_MS, DEFAULT_PLAYER_TIME_SECONDS, letterValue } from './constants'
+import { PLAYER_TIME_OPTIONS_MS, DEFAULT_PLAYER_TIME_SECONDS, PLAYER_TIME_MS, letterValue } from './constants'
 import { dictionary } from './dictionary'
 import { runAiTurn } from './ai'
 import { saveLeaderboardEntry } from './leaderboard'

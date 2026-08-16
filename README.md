@@ -17,7 +17,7 @@ Open the local URL, choose **Easy** or **Hard**, and race the clock.
 
 ## Rules (MVP)
 
-- 90 seconds of active player time (pauses on AI turns)
+- 90 or 180 seconds of active player time (pauses on AI turns)
 - Full-board rearrange before submit; no locked tiles
 - Delta scoring: `max(0, newBoardScore - previousBoardScore)`
 - AI must move within 5 seconds or swap/pass

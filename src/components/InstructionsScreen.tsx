@@ -15,7 +15,7 @@ export function InstructionsScreen({ onBack }: InstructionsScreenProps) {
         <ol className="instructions-list">
           <li>
             <strong>Your clock</strong>
-            <span>You get 90 seconds of active time. It pauses while the AI thinks.</span>
+            <span>Choose 90 or 180 seconds of active time on the home screen. The clock pauses while the AI thinks.</span>
           </li>
           <li>
             <strong>Place tiles</strong>

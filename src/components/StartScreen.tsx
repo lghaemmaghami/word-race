@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
-import type { Difficulty } from '../game/types'
+import type { Difficulty, TimeLimitSeconds } from '../game/types'
 import { formatDifficulty, loadLeaderboard } from '../game/leaderboard'
 import { InstructionsScreen } from './InstructionsScreen'
 
 interface StartScreenProps {
   dictReady: boolean
   dictError: string | null
-  onStart: (d: Difficulty) => void
+  onStart: (d: Difficulty, timeLimitSeconds: TimeLimitSeconds) => void
 }
 
 export function StartScreen({ dictReady, dictError, onStart }: StartScreenProps) {
   const [showInstructions, setShowInstructions] = useState(false)
+  const [timeLimit, setTimeLimit] = useState<TimeLimitSeconds>(90)
   const leaders = loadLeaderboard().slice(0, 5)
 
   useEffect(() => {
@@ -42,16 +43,35 @@ export function StartScreen({ dictReady, dictError, onStart }: StartScreenProps)
         <p className="eyebrow">Single-player crossword duel</p>
         <h1 className="brand">Word Race</h1>
         <p className="tagline">
-          Outscore the AI on a shared crossword board before your 90 seconds run out.
+          Outscore the AI on a shared crossword board before your clock runs out.
         </p>
       </header>
+
+      <div className="time-limit-picker" role="group" aria-label="Game length">
+        <button
+          type="button"
+          className={`time-limit-option ${timeLimit === 90 ? 'is-selected' : ''}`}
+          aria-pressed={timeLimit === 90}
+          onClick={() => setTimeLimit(90)}
+        >
+          90s
+        </button>
+        <button
+          type="button"
+          className={`time-limit-option ${timeLimit === 180 ? 'is-selected' : ''}`}
+          aria-pressed={timeLimit === 180}
+          onClick={() => setTimeLimit(180)}
+        >
+          180s
+        </button>
+      </div>
 
       <div className="difficulty-actions">
         <button
           type="button"
           className="btn btn-primary"
           disabled={!dictReady}
-          onClick={() => onStart('easy')}
+          onClick={() => onStart('easy', timeLimit)}
         >
           Play Easy
         </button>
@@ -59,7 +79,7 @@ export function StartScreen({ dictReady, dictError, onStart }: StartScreenProps)
           type="button"
           className="btn btn-secondary"
           disabled={!dictReady}
-          onClick={() => onStart('hard')}
+          onClick={() => onStart('hard', timeLimit)}
         >
           Play Hard
         </button>

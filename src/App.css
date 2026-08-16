@@ -136,6 +136,42 @@
   animation: rise 0.7s ease 0.12s both;
 }
 
+.time-limit-picker {
+  display: inline-flex;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  margin-top: 0.15rem;
+  border: 1px solid rgba(255, 255, 250, 0.28);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  animation: rise 0.7s ease 0.08s both;
+}
+
+.time-limit-option {
+  min-width: 4.5rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 250, 0.78);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.time-limit-option:hover,
+.time-limit-option:focus-visible {
+  color: #fffffa;
+  outline: none;
+}
+
+.time-limit-option.is-selected {
+  background: #222a68;
+  border-color: #222a68;
+  color: #fffffa;
+}
+
 .btn {
   border: 1px solid transparent;
   border-radius: 999px;
@@ -1140,6 +1176,16 @@
     width: 2.1rem;
     height: 2.1rem;
     font-size: 1.25rem;
+  }
+
+  .time-limit-picker {
+    margin-top: 0;
+  }
+
+  .time-limit-option {
+    min-width: 4rem;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.9rem;
   }
 
   .instructions-panel {

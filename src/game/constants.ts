@@ -3,7 +3,12 @@ import type { Multiplier } from './types'
 export const BOARD_SIZE = 15
 export const CENTER = 7
 export const RACK_SIZE = 7
-export const PLAYER_TIME_MS = 90_000
+export const PLAYER_TIME_OPTIONS_MS = {
+  90: 90_000,
+  180: 180_000,
+} as const
+export const DEFAULT_PLAYER_TIME_SECONDS = 90 as const
+export const PLAYER_TIME_MS = PLAYER_TIME_OPTIONS_MS[DEFAULT_PLAYER_TIME_SECONDS]
 export const AI_TIME_MS = 5_000
 
 export const LETTER_VALUES: Record<string, number> = {

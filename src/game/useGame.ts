@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { canSwapFullRack, createBag, fillRack, shuffle, swapFullRack } from './bag'
 import { boardTileIds, cloneBoard, emptyBoard, findTileOnBoard, resetTileSeq } from './board'
-import { PLAYER_TIME_MS, letterValue } from './constants'
+import { PLAYER_TIME_OPTIONS_MS, DEFAULT_PLAYER_TIME_SECONDS, letterValue } from './constants'
 import { dictionary } from './dictionary'
 import { runAiTurn } from './ai'
 import { saveLeaderboardEntry } from './leaderboard'
 import { listWordsCompletedByTiles } from './scoring'
 import { validateSubmission } from './validation'
-import type { AiMoveSummary, Board, Difficulty, PlayedWord, Tile, TileOwner } from './types'
+import type { AiMoveSummary, Board, Difficulty, PlayedWord, Tile, TileOwner, TimeLimitSeconds } from './types'
 
 export type Screen = 'start' | 'game' | 'end'
 
@@ -46,6 +46,7 @@ function wordsCompletedThisPlay(board: Board, previousBoard: Board, by: TileOwne
 export function useGame() {
   const [screen, setScreen] = useState<Screen>('start')
   const [difficulty, setDifficulty] = useState<Difficulty>('easy')
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState<TimeLimitSeconds>(DEFAULT_PLAYER_TIME_SECONDS)
   const [dictReady, setDictReady] = useState(dictionary.loaded)
   const [dictError, setDictError] = useState<string | null>(null)
 
@@ -228,7 +229,7 @@ export function useGame() {
   )
 
   const startGame = useCallback(
-    (d: Difficulty) => {
+    (d: Difficulty, limit: TimeLimitSeconds = DEFAULT_PLAYER_TIME_SECONDS) => {
       if (!dictionary.loaded) return
       resetTileSeq()
       endingRef.current = false
@@ -240,6 +241,7 @@ export function useGame() {
       ;({ rack: aRack, bag: nextBag } = fillRack([], nextBag))
       const blank = emptyBoard()
       setDifficulty(d)
+      setTimeLimitSeconds(limit)
       setBag(nextBag)
       setPlayerRack(pRack)
       setAiRack(aRack)
@@ -248,7 +250,7 @@ export function useGame() {
       setPreviousBoardScore(0)
       setPlayerScore(0)
       setAiScore(0)
-      setTimeLeftMs(PLAYER_TIME_MS)
+      setTimeLeftMs(PLAYER_TIME_OPTIONS_MS[limit])
       setAiSummary(null)
       setMessage('Cover the centre square on your first submit.')
       setPlayedWords([])
@@ -442,7 +444,10 @@ export function useGame() {
     [turn, selectedTileId, returnUncommittedToRack],
   )
 
-  const playAgain = useCallback(() => startGame(difficulty), [startGame, difficulty])
+  const playAgain = useCallback(
+    () => startGame(difficulty, timeLimitSeconds),
+    [startGame, difficulty, timeLimitSeconds],
+  )
   const backToStart = useCallback(() => {
     endingRef.current = false
     setScreen('start')
@@ -451,6 +456,7 @@ export function useGame() {
   return {
     screen,
     difficulty,
+    timeLimitSeconds,
     dictReady,
     dictError,
     board,

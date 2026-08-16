@@ -1,5 +1,8 @@
 export type Difficulty = 'easy' | 'hard'
 
+/** Active player clock options (seconds). */
+export type TimeLimitSeconds = 90 | 180
+
 export type TileOwner = 'player' | 'ai'
 
 export type Multiplier = 'none' | 'DL' | 'TL' | 'DW' | 'TW'

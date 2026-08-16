@@ -58,7 +58,7 @@ export function useGame() {
   const [previousBoardScore, setPreviousBoardScore] = useState(0)
   const [playerScore, setPlayerScore] = useState(0)
   const [aiScore, setAiScore] = useState(0)
-  const [timeLeftMs, setTimeLeftMs] = useState(PLAYER_TIME_MS)
+  const [timeLeftMs, setTimeLeftMs] = useState<number>(PLAYER_TIME_MS)
   const [turn, setTurn] = useState<'player' | 'ai'>('player')
   const [aiSummary, setAiSummary] = useState<AiMoveSummary | null>(null)
   const [message, setMessage] = useState<string | null>(null)

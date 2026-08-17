@@ -33,6 +33,11 @@ export function fillRack(rack: Tile[], bag: Tile[]): { rack: Tile[]; bag: Tile[]
   return { rack: [...rack, ...drawn], bag: nextBag }
 }
 
+/** True when this side cannot place another tile (empty rack and nothing left to draw). */
+export function noTilesLeftToPlay(rack: Tile[], bag: Tile[]): boolean {
+  return rack.length === 0 && bag.length === 0
+}
+
 export function canSwapFullRack(bag: Tile[]): boolean {
   return bag.length >= RACK_SIZE
 }

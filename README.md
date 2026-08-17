@@ -18,6 +18,7 @@ Open the local URL, choose **Easy** or **Hard**, and race the clock.
 ## Rules (MVP)
 
 - 90 or 180 seconds of active player time (pauses on AI turns)
+- Game also ends when the bag is empty and a player has no tiles left to play
 - Full-board rearrange before submit; no locked tiles
 - Delta scoring: `max(0, newBoardScore - previousBoardScore)`
 - AI must move within 5 seconds or swap/pass

@@ -35,7 +35,7 @@ export function InstructionsScreen({ onBack }: InstructionsScreenProps) {
           </li>
           <li>
             <strong>Win</strong>
-            <span>When time runs out, the higher score wins. Tap a word later to see its definition.</span>
+            <span>The game ends when time runs out, or when the bag and a player’s rack are both empty. Highest score wins.</span>
           </li>
         </ol>
       </section>

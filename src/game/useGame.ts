@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { canSwapFullRack, createBag, fillRack, shuffle, swapFullRack } from './bag'
+import { canSwapFullRack, createBag, fillRack, noTilesLeftToPlay, shuffle, swapFullRack } from './bag'
 import { boardTileIds, cloneBoard, emptyBoard, findTileOnBoard, resetTileSeq } from './board'
 import { PLAYER_TIME_OPTIONS_MS, DEFAULT_PLAYER_TIME_SECONDS, PLAYER_TIME_MS, letterValue } from './constants'
 import { dictionary } from './dictionary'
@@ -148,12 +148,31 @@ export function useGame() {
     }
   }, [timeLeftMs, screen, playerScore, aiScore, difficulty, endGame])
 
+  useEffect(() => {
+    if (screen !== 'game' || turn !== 'player' || endingRef.current) return
+    const loose = collectLooseTiles(board, committedBoard)
+    if (noTilesLeftToPlay(playerRack, bag) && loose.length === 0) {
+      endGame(playerScore, aiScore, difficulty)
+    }
+  }, [screen, turn, playerRack, bag, board, committedBoard, playerScore, aiScore, difficulty, endGame])
+
   const beginPlayerTurn = useCallback((rack: Tile[]) => {
     setRackTileIdsThisTurn(new Set(rack.map((t) => t.id)))
     setSelectedTileId(null)
     setSelectedCell(null)
     setTurn('player')
   }, [])
+
+  const handOffToPlayerOrEnd = useCallback(
+    (playerRack: Tile[], nextBag: Tile[], pScore: number, aScore: number, diff: Difficulty) => {
+      if (noTilesLeftToPlay(playerRack, nextBag)) {
+        endGame(pScore, aScore, diff)
+        return
+      }
+      beginPlayerTurn(playerRack)
+    },
+    [beginPlayerTurn, endGame],
+  )
 
   const runAi = useCallback(
     async (snapshot: {
@@ -167,6 +186,16 @@ export function useGame() {
       playerRack: Tile[]
     }) => {
       if (aiBusy.current || endingRef.current) return
+      if (noTilesLeftToPlay(snapshot.aiRack, snapshot.bag)) {
+        handOffToPlayerOrEnd(
+          snapshot.playerRack,
+          snapshot.bag,
+          snapshot.playerScore,
+          snapshot.aiScore,
+          snapshot.difficulty,
+        )
+        return
+      }
       aiBusy.current = true
       setTurn('ai')
       setMessage('AI is thinking…')
@@ -185,6 +214,7 @@ export function useGame() {
           let nextBag = snapshot.bag
           let nextRack = result.move.rack
           ;({ rack: nextRack, bag: nextBag } = fillRack(nextRack, nextBag))
+          const nextAiScore = snapshot.aiScore + result.move.moveScore
           setBoard(result.move.board)
           setCommittedBoard(cloneBoard(result.move.board))
           setPreviousBoardScore(result.move.boardScore)
@@ -194,7 +224,7 @@ export function useGame() {
           ])
           setAiRack(nextRack)
           setBag(nextBag)
-          setAiScore(snapshot.aiScore + result.move.moveScore)
+          setAiScore(nextAiScore)
           setAiSummary({
             type: 'play',
             word: result.move.word,
@@ -202,7 +232,17 @@ export function useGame() {
             detail: `AI played ${result.move.word} for +${result.move.moveScore}`,
           })
           setMessage(null)
-          beginPlayerTurn(snapshot.playerRack)
+          if (noTilesLeftToPlay(nextRack, nextBag)) {
+            endGame(snapshot.playerScore, nextAiScore, snapshot.difficulty)
+            return
+          }
+          handOffToPlayerOrEnd(
+            snapshot.playerRack,
+            nextBag,
+            snapshot.playerScore,
+            nextAiScore,
+            snapshot.difficulty,
+          )
           return
         }
 
@@ -213,19 +253,31 @@ export function useGame() {
             setBag(swapped.bag)
             setAiSummary({ type: 'swap', detail: 'AI swapped its full rack' })
             setMessage(null)
-            beginPlayerTurn(snapshot.playerRack)
+            handOffToPlayerOrEnd(
+              snapshot.playerRack,
+              swapped.bag,
+              snapshot.playerScore,
+              snapshot.aiScore,
+              snapshot.difficulty,
+            )
             return
           }
         }
 
         setAiSummary({ type: 'pass', detail: 'AI passed' })
         setMessage(null)
-        beginPlayerTurn(snapshot.playerRack)
+        handOffToPlayerOrEnd(
+          snapshot.playerRack,
+          snapshot.bag,
+          snapshot.playerScore,
+          snapshot.aiScore,
+          snapshot.difficulty,
+        )
       } finally {
         aiBusy.current = false
       }
     },
-    [beginPlayerTurn],
+    [endGame, handOffToPlayerOrEnd],
   )
 
   const startGame = useCallback(
@@ -294,6 +346,11 @@ export function useGame() {
     setPlayerRack(filled)
     setBag(nextBag)
 
+    if (noTilesLeftToPlay(filled, nextBag)) {
+      endGame(newPlayerScore, s.aiScore, s.difficulty)
+      return
+    }
+
     void runAi({
       board: s.board,
       aiRack: s.aiRack,
@@ -304,7 +361,7 @@ export function useGame() {
       difficulty: s.difficulty,
       playerRack: filled,
     })
-  }, [turn, screen, rackTileIdsThisTurn, runAi])
+  }, [turn, screen, rackTileIdsThisTurn, runAi, endGame])
 
   const recall = useCallback(() => {
     if (turn !== 'player') return

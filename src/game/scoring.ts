@@ -1,6 +1,6 @@
 import { BOARD_SIZE, CENTER, MULTIPLIERS, letterValue } from './constants'
-import { getOccupiedPositions } from './board'
-import type { Board, Multiplier } from './types'
+import { getOccupiedPositions, boardTileIds } from './board'
+import type { Board, Multiplier, PlayedWord, TileOwner } from './types'
 import type { Dictionary } from './dictionary'
 
 export interface ExtractedWord {
@@ -253,4 +253,41 @@ export function validateBoard(board: Board, dict: Dictionary): BoardValidation {
 
 export function moveScore(newBoardScore: number, previousBoardScore: number): number {
   return Math.max(0, newBoardScore - previousBoardScore)
+}
+
+/** Split a turn's credited points across words formed or extended this play. */
+export function allocateMoveScore(words: ScoredWord[], moveScore: number): number[] {
+  if (words.length === 0) return []
+  if (words.length === 1) return [moveScore]
+
+  const fullTotal = words.reduce((sum, w) => sum + w.score, 0)
+  if (fullTotal === 0) return words.map((_, i) => (i === 0 ? moveScore : 0))
+
+  let allocated = 0
+  return words.map((w, i) => {
+    if (i === words.length - 1) return moveScore - allocated
+    const share = Math.round((moveScore * w.score) / fullTotal)
+    allocated += share
+    return share
+  })
+}
+
+/** Words formed or extended by newly placed tiles, with credited turn score (not full board word value). */
+export function wordsCompletedThisPlay(
+  board: Board,
+  previousBoard: Board,
+  by: TileOwner,
+  moveScore: number,
+): PlayedWord[] {
+  const prevIds = boardTileIds(previousBoard)
+  const newIds = new Set<string>()
+  for (const row of board) {
+    for (const cell of row) {
+      if (cell && !prevIds.has(cell.id)) newIds.add(cell.id)
+    }
+  }
+
+  const words = listWordsCompletedByTiles(board, newIds)
+  const credited = allocateMoveScore(words, moveScore)
+  return words.map((w, i) => ({ ...w, score: credited[i]!, by }))
 }

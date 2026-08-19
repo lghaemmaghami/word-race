@@ -5,9 +5,9 @@ import { PLAYER_TIME_OPTIONS_MS, DEFAULT_PLAYER_TIME_SECONDS, PLAYER_TIME_MS, le
 import { dictionary } from './dictionary'
 import { runAiTurn } from './ai'
 import { getPlayerName, submitScore } from './leaderboard'
-import { listWordsCompletedByTiles } from './scoring'
+import { wordsCompletedThisPlay } from './scoring'
 import { validateSubmission } from './validation'
-import type { AiMoveSummary, Board, Difficulty, PlayedWord, Tile, TileOwner, TimeLimitSeconds } from './types'
+import type { AiMoveSummary, Board, Difficulty, PlayedWord, Tile, TimeLimitSeconds } from './types'
 
 export type Screen = 'start' | 'game' | 'end'
 
@@ -31,18 +31,6 @@ function mergeRack(rack: Tile[], extras: Tile[]): Tile[] {
   }
   return next
 }
-
-function wordsCompletedThisPlay(board: Board, previousBoard: Board, by: TileOwner): PlayedWord[] {
-  const prevIds = boardTileIds(previousBoard)
-  const newIds = new Set<string>()
-  for (const row of board) {
-    for (const cell of row) {
-      if (cell && !prevIds.has(cell.id)) newIds.add(cell.id)
-    }
-  }
-  return listWordsCompletedByTiles(board, newIds).map((w) => ({ ...w, by }))
-}
-
 export function useGame() {
   const [screen, setScreen] = useState<Screen>('start')
   const [difficulty, setDifficulty] = useState<Difficulty>('easy')
@@ -227,7 +215,7 @@ export function useGame() {
           setPreviousBoardScore(result.move.boardScore)
           setPlayedWords((prev) => [
             ...prev,
-            ...wordsCompletedThisPlay(result.move.board, snapshot.board, 'ai'),
+            ...wordsCompletedThisPlay(result.move.board, snapshot.board, 'ai', result.move.moveScore),
           ])
           setAiRack(nextRack)
           setBag(nextBag)
@@ -342,7 +330,7 @@ export function useGame() {
     setPlayerScore(newPlayerScore)
     setCommittedBoard(cloneBoard(s.board))
     setPreviousBoardScore(banked)
-    setPlayedWords((prev) => [...prev, ...wordsCompletedThisPlay(s.board, s.committedBoard, 'player')])
+    setPlayedWords((prev) => [...prev, ...wordsCompletedThisPlay(s.board, s.committedBoard, 'player', gained)])
     setMessage(gained > 0 ? `+${gained} points` : 'Board valid — no score gain')
     setSelectedTileId(null)
     setSelectedCell(null)

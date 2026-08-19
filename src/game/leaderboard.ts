@@ -1,10 +1,11 @@
 import type { Difficulty, LeaderboardEntry } from './types'
 
-const KEY = 'word-race-leaderboard'
-const MAX_ENTRIES = 20
+const PLAYER_NAME_KEY = 'word-race-player-name'
+const MAX_ENTRIES = 10
 const MAX_SCORE = 1_000_000
-const MAX_ID_LEN = 64
-const MAX_DATE_LEN = 64
+const MAX_NAME_LEN = 32
+
+const DB_URL = import.meta.env.VITE_FIREBASE_DB_URL as string | undefined
 
 function isDifficulty(value: unknown): value is Difficulty {
   return value === 'easy' || value === 'hard'
@@ -18,18 +19,23 @@ function sanitizeEntry(value: unknown): LeaderboardEntry | null {
   if (!value || typeof value !== 'object') return null
   const raw = value as Record<string, unknown>
 
-  if (typeof raw.id !== 'string' || raw.id.length === 0 || raw.id.length > MAX_ID_LEN) return null
-  if (typeof raw.date !== 'string' || raw.date.length === 0 || raw.date.length > MAX_DATE_LEN) return null
+  if (typeof raw.id !== 'string' || raw.id.length === 0) return null
+  if (typeof raw.date !== 'string' || raw.date.length === 0) return null
   if (!isFiniteNumber(raw.playerScore) || raw.playerScore < 0 || raw.playerScore > MAX_SCORE) return null
   if (!isFiniteNumber(raw.aiScore) || raw.aiScore < 0 || raw.aiScore > MAX_SCORE) return null
   if (!isFiniteNumber(raw.difference) || Math.abs(raw.difference) > MAX_SCORE) return null
   if (typeof raw.won !== 'boolean') return null
   if (!isDifficulty(raw.difficulty)) return null
 
-  // Rebuild a plain object so unexpected keys / prototypes cannot linger.
+  const playerName =
+    typeof raw.playerName === 'string' && raw.playerName.length > 0 && raw.playerName.length <= MAX_NAME_LEN
+      ? raw.playerName
+      : 'Unknown'
+
   return {
     id: raw.id,
     date: raw.date,
+    playerName,
     playerScore: Math.trunc(raw.playerScore),
     aiScore: Math.trunc(raw.aiScore),
     difference: Math.trunc(raw.difference),
@@ -38,52 +44,73 @@ function sanitizeEntry(value: unknown): LeaderboardEntry | null {
   }
 }
 
-export function loadLeaderboard(): LeaderboardEntry[] {
+let cachedLeaderboard: LeaderboardEntry[] = []
+
+export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
+  if (!DB_URL) return cachedLeaderboard
   try {
-    const raw = localStorage.getItem(KEY)
-    if (!raw || raw.length > 50_000) return []
-    const parsed: unknown = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    return parsed
-      .slice(0, MAX_ENTRIES * 2)
+    const res = await fetch(
+      `${DB_URL}/leaderboard.json?orderBy="playerScore"&limitToLast=${MAX_ENTRIES}`,
+    )
+    if (!res.ok) return cachedLeaderboard
+    const data: unknown = await res.json()
+    if (!data || typeof data !== 'object') return []
+    const entries = Object.values(data as Record<string, unknown>)
       .map(sanitizeEntry)
-      .filter((entry): entry is LeaderboardEntry => entry !== null && entry.won)
+      .filter((e): e is LeaderboardEntry => e !== null)
+      .sort((a, b) => b.playerScore - a.playerScore)
       .slice(0, MAX_ENTRIES)
+    cachedLeaderboard = entries
+    return entries
   } catch {
-    return []
+    return cachedLeaderboard
   }
 }
 
-export function saveLeaderboardEntry(entry: Omit<LeaderboardEntry, 'id'>): LeaderboardEntry {
-  const raw = localStorage.getItem(KEY)
-  let list: LeaderboardEntry[] = []
-  try {
-    if (raw && raw.length <= 50_000) {
-      const parsed: unknown = JSON.parse(raw)
-      if (Array.isArray(parsed)) {
-        list = parsed
-          .slice(0, MAX_ENTRIES * 2)
-          .map(sanitizeEntry)
-          .filter((e): e is LeaderboardEntry => e !== null)
-      }
-    }
-  } catch { /* use empty list */ }
+export function getCachedLeaderboard(): LeaderboardEntry[] {
+  return cachedLeaderboard
+}
+
+export async function submitScore(entry: {
+  playerName: string
+  playerScore: number
+  aiScore: number
+  difference: number
+  won: boolean
+  difficulty: Difficulty
+}): Promise<void> {
+  if (!DB_URL) return
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   const full: LeaderboardEntry = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    date: entry.date,
-    playerScore: Math.trunc(entry.playerScore),
-    aiScore: Math.trunc(entry.aiScore),
-    difference: Math.trunc(entry.difference),
-    won: Boolean(entry.won),
-    difficulty: entry.difficulty === 'easy' ? 'easy' : 'hard',
+    id,
+    date: new Date().toISOString(),
+    ...entry,
   }
-  list.push(full)
-  list.sort((a, b) => b.playerScore - a.playerScore)
-  const trimmed = list.slice(0, MAX_ENTRIES)
-  localStorage.setItem(KEY, JSON.stringify(trimmed))
-  return full
+  try {
+    await fetch(`${DB_URL}/leaderboard/${id}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(full),
+    })
+  } catch {
+    // best-effort
+  }
 }
 
 export function formatDifficulty(d: Difficulty): string {
   return d === 'easy' ? 'Easy' : 'Hard'
+}
+
+export function getPlayerName(): string | null {
+  try {
+    const name = localStorage.getItem(PLAYER_NAME_KEY)
+    if (name && name.trim().length > 0 && name.length <= MAX_NAME_LEN) return name.trim()
+    return null
+  } catch {
+    return null
+  }
+}
+
+export function setPlayerName(name: string): void {
+  localStorage.setItem(PLAYER_NAME_KEY, name.trim().slice(0, MAX_NAME_LEN))
 }

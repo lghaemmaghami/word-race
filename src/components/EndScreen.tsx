@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { formatDifficulty, loadLeaderboard } from '../game/leaderboard'
+import { useEffect, useState } from 'react'
+import { formatDifficulty, fetchLeaderboard } from '../game/leaderboard'
 import { letterValue } from '../game/constants'
-import type { Board, Difficulty, PlayedWord } from '../game/types'
+import type { Board, Difficulty, LeaderboardEntry, PlayedWord } from '../game/types'
 import { BoardView } from './BoardView'
 import { DefinitionSheet } from './DefinitionSheet'
 
@@ -82,7 +82,11 @@ export function EndScreen({
   onHome,
 }: EndScreenProps) {
   const diff = playerScore - aiScore
-  const leaders = loadLeaderboard()
+  const [leaders, setLeaders] = useState<LeaderboardEntry[]>([])
+
+  useEffect(() => {
+    void fetchLeaderboard().then(setLeaders)
+  }, [])
   const yours = playedWords
     .filter((w) => w.by === 'player')
     .slice()

@@ -1,12 +1,15 @@
 import type { Difficulty, LeaderboardEntry } from './types'
 
-const KEY = 'word-race-leaderboard'
 const PLAYER_NAME_KEY = 'word-race-player-name'
 const MAX_ENTRIES = 10
 const MAX_SCORE = 1_000_000
 const MAX_ID_LEN = 64
 const MAX_DATE_LEN = 64
 const MAX_NAME_LEN = 32
+
+const REPO = 'lghaemmaghami/word-race'
+const LEADERBOARD_URL = import.meta.env.BASE_URL + 'leaderboard.json'
+const GH_TOKEN = import.meta.env.VITE_GH_TOKEN as string | undefined
 
 function isDifficulty(value: unknown): value is Difficulty {
   return value === 'easy' || value === 'hard'
@@ -45,55 +48,60 @@ function sanitizeEntry(value: unknown): LeaderboardEntry | null {
   }
 }
 
-export function loadLeaderboard(): LeaderboardEntry[] {
+let cachedLeaderboard: LeaderboardEntry[] = []
+let lastFetchMs = 0
+const CACHE_TTL_MS = 30_000
+
+export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
+  if (Date.now() - lastFetchMs < CACHE_TTL_MS && cachedLeaderboard.length > 0) {
+    return cachedLeaderboard
+  }
   try {
-    const raw = localStorage.getItem(KEY)
-    if (!raw || raw.length > 50_000) return []
-    const parsed: unknown = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    return parsed
+    const res = await fetch(LEADERBOARD_URL, { cache: 'no-store' })
+    if (!res.ok) return cachedLeaderboard
+    const parsed: unknown = await res.json()
+    if (!Array.isArray(parsed)) return cachedLeaderboard
+    cachedLeaderboard = parsed
       .slice(0, MAX_ENTRIES * 2)
       .map(sanitizeEntry)
-      .filter((entry): entry is LeaderboardEntry => entry !== null && entry.won)
+      .filter((e): e is LeaderboardEntry => e !== null)
       .slice(0, MAX_ENTRIES)
+    lastFetchMs = Date.now()
+    return cachedLeaderboard
   } catch {
-    return []
+    return cachedLeaderboard
   }
 }
 
-export function saveLeaderboardEntry(entry: Omit<LeaderboardEntry, 'id'>): LeaderboardEntry | null {
-  const raw = localStorage.getItem(KEY)
-  let list: LeaderboardEntry[] = []
+export function getCachedLeaderboard(): LeaderboardEntry[] {
+  return cachedLeaderboard
+}
+
+export async function submitScore(entry: {
+  playerName: string
+  playerScore: number
+  aiScore: number
+  difference: number
+  won: boolean
+  difficulty: Difficulty
+}): Promise<void> {
+  if (!GH_TOKEN) return
   try {
-    if (raw && raw.length <= 50_000) {
-      const parsed: unknown = JSON.parse(raw)
-      if (Array.isArray(parsed)) {
-        list = parsed
-          .slice(0, MAX_ENTRIES * 2)
-          .map(sanitizeEntry)
-          .filter((e): e is LeaderboardEntry => e !== null)
-      }
-    }
-  } catch { /* use empty list */ }
-  const full: LeaderboardEntry = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    date: entry.date,
-    playerName: entry.playerName,
-    playerScore: Math.trunc(entry.playerScore),
-    aiScore: Math.trunc(entry.aiScore),
-    difference: Math.trunc(entry.difference),
-    won: Boolean(entry.won),
-    difficulty: entry.difficulty === 'easy' ? 'easy' : 'hard',
+    await fetch(`https://api.github.com/repos/${REPO}/dispatches`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${GH_TOKEN}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        event_type: 'update-leaderboard',
+        client_payload: entry,
+      }),
+    })
+  } catch {
+    // fire-and-forget
   }
-  list.push(full)
-  list.sort((a, b) => b.playerScore - a.playerScore)
-  const trimmed = list.slice(0, MAX_ENTRIES)
-
-  const madeTheCut = trimmed.some((e) => e.id === full.id)
-  if (!madeTheCut) return null
-
-  localStorage.setItem(KEY, JSON.stringify(trimmed))
-  return full
 }
 
 export function formatDifficulty(d: Difficulty): string {

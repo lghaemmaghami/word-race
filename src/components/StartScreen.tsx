@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import type { Difficulty, TimeLimitSeconds } from '../game/types'
-import { formatDifficulty, loadLeaderboard } from '../game/leaderboard'
+import type { Difficulty, LeaderboardEntry, TimeLimitSeconds } from '../game/types'
+import { formatDifficulty, fetchLeaderboard } from '../game/leaderboard'
 import { InstructionsScreen } from './InstructionsScreen'
 
 interface StartScreenProps {
@@ -13,7 +13,11 @@ interface StartScreenProps {
 export function StartScreen({ dictReady, dictError, onStart, playerName }: StartScreenProps) {
   const [showInstructions, setShowInstructions] = useState(false)
   const [timeLimit, setTimeLimit] = useState<TimeLimitSeconds>(90)
-  const leaders = loadLeaderboard().slice(0, 5)
+  const [leaders, setLeaders] = useState<LeaderboardEntry[]>([])
+
+  useEffect(() => {
+    void fetchLeaderboard().then((entries) => setLeaders(entries.slice(0, 5)))
+  }, [])
 
   useEffect(() => {
     if (!showInstructions) return

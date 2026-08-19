@@ -20,6 +20,6 @@ Open the local URL, choose **Easy** or **Hard**, and race the clock.
 - 90 or 180 seconds of active player time (pauses on AI turns)
 - Game also ends when the bag is empty and a player has no tiles left to play
 - Full-board rearrange before submit; no locked tiles
-- Delta scoring: `max(0, newBoardScore - previousBoardScore)`
+- Official Scrabble turn scoring: sum words formed/modified each turn; premiums on newly played tiles only; +50 bingo for using all 7 rack tiles; end-game rack adjustments
 - AI must move within 5 seconds or swap/pass
 - Dictionary is ENABLE plus the official two-letter word list (junk like IR/CS is rejected)

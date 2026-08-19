@@ -21,14 +21,15 @@ function WordColumn({
   title,
   words,
   tone,
+  totalScore,
   onSelectWord,
 }: {
   title: string
   words: PlayedWord[]
   tone: 'player' | 'ai'
+  totalScore: number
   onSelectWord: (word: string) => void
 }) {
-  const total = words.reduce((sum, w) => sum + w.score, 0)
   return (
     <div className={`word-column ${tone}`}>
       <h3>{title}</h3>
@@ -64,7 +65,7 @@ function WordColumn({
       )}
       <p className="word-column-total">
         <span>Total</span>
-        <strong>{total}</strong>
+        <strong>{totalScore}</strong>
       </p>
     </div>
   )
@@ -138,8 +139,8 @@ export function EndScreen({
             <p className="status-line">No words were played.</p>
           ) : (
             <div className="word-columns">
-              <WordColumn title="You" words={yours} tone="player" onSelectWord={setSelectedWord} />
-              <WordColumn title="AI" words={theirs} tone="ai" onSelectWord={setSelectedWord} />
+              <WordColumn title="You" words={yours} tone="player" totalScore={playerScore} onSelectWord={setSelectedWord} />
+              <WordColumn title="AI" words={theirs} tone="ai" totalScore={aiScore} onSelectWord={setSelectedWord} />
             </div>
           )}
         </div>

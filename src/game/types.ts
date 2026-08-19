@@ -51,8 +51,10 @@ export interface ValidationResult {
   ok: boolean
   reason?: string
   words?: string[]
-  boardScore?: number
   moveScore?: number
+  usedPremiumSquares?: Set<string>
+  scoredWords?: Array<{ word: string; score: number; bonuses: Array<Exclude<Multiplier, 'none'>> }>
+  bingo?: boolean
 }
 
 export interface CandidateMove {
@@ -60,5 +62,7 @@ export interface CandidateMove {
   rack: Tile[]
   word: string
   moveScore: number
-  boardScore: number
+  usedPremiumSquares: Set<string>
+  scoredWords: Array<{ word: string; score: number; bonuses: Array<Exclude<Multiplier, 'none'>> }>
+  bingo: boolean
 }

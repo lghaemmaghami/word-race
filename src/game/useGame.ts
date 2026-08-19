@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { canSwapFullRack, createBag, fillRack, noTilesLeftToPlay, shuffle, swapFullRack } from './bag'
 import { boardTileIds, cloneBoard, emptyBoard, findTileOnBoard, resetTileSeq } from './board'
 import { PLAYER_TIME_OPTIONS_MS, DEFAULT_PLAYER_TIME_SECONDS, PLAYER_TIME_MS, letterValue } from './constants'
 import { dictionary } from './dictionary'
 import { runAiTurn } from './ai'
 import { getPlayerName, submitScore } from './leaderboard'
-import { listWordsCompletedByTiles } from './scoring'
+import { newTileIdsBetweenBoards, rackTileScore, scorePlay } from './scoring'
 import { validateSubmission } from './validation'
-import type { AiMoveSummary, Board, Difficulty, PlayedWord, Tile, TileOwner, TimeLimitSeconds } from './types'
+import type { AiMoveSummary, Board, Difficulty, PlayedWord, Tile, TimeLimitSeconds } from './types'
 
 export type Screen = 'start' | 'game' | 'end'
 
@@ -31,18 +31,6 @@ function mergeRack(rack: Tile[], extras: Tile[]): Tile[] {
   }
   return next
 }
-
-function wordsCompletedThisPlay(board: Board, previousBoard: Board, by: TileOwner): PlayedWord[] {
-  const prevIds = boardTileIds(previousBoard)
-  const newIds = new Set<string>()
-  for (const row of board) {
-    for (const cell of row) {
-      if (cell && !prevIds.has(cell.id)) newIds.add(cell.id)
-    }
-  }
-  return listWordsCompletedByTiles(board, newIds).map((w) => ({ ...w, by }))
-}
-
 export function useGame() {
   const [screen, setScreen] = useState<Screen>('start')
   const [difficulty, setDifficulty] = useState<Difficulty>('easy')
@@ -55,7 +43,7 @@ export function useGame() {
   const [playerRack, setPlayerRack] = useState<Tile[]>([])
   const [aiRack, setAiRack] = useState<Tile[]>([])
   const [bag, setBag] = useState<Tile[]>([])
-  const [previousBoardScore, setPreviousBoardScore] = useState(0)
+  const [usedPremiumSquares, setUsedPremiumSquares] = useState<Set<string>>(() => new Set())
   const [playerScore, setPlayerScore] = useState(0)
   const [aiScore, setAiScore] = useState(0)
   const [timeLeftMs, setTimeLeftMs] = useState<number>(PLAYER_TIME_MS)
@@ -78,7 +66,7 @@ export function useGame() {
     playerRack,
     aiRack,
     bag,
-    previousBoardScore,
+    usedPremiumSquares,
     playerScore,
     aiScore,
     difficulty,
@@ -92,7 +80,7 @@ export function useGame() {
     playerRack,
     aiRack,
     bag,
-    previousBoardScore,
+    usedPremiumSquares,
     playerScore,
     aiScore,
     difficulty,
@@ -119,27 +107,65 @@ export function useGame() {
     }
   }, [])
 
-  const endGame = useCallback(async (pScore: number, aScore: number, diff: Difficulty) => {
-    if (endingRef.current) return
-    endingRef.current = true
-    const playerWon = pScore > aScore
-    setWon(playerWon)
-    if (playerWon) {
-      await submitScore({
-        playerName: getPlayerName() ?? 'Unknown',
-        playerScore: pScore,
-        aiScore: aScore,
-        difference: pScore - aScore,
-        won: playerWon,
-        difficulty: diff,
-        timeLimitSeconds: stateRef.current.timeLimitSeconds,
-      })
-    }
-    setCurrentEntryId(null)
-    setTurn('player')
-    setBoard(cloneBoard(stateRef.current.committedBoard))
-    setScreen('end')
-  }, [])
+  const finalizeScores = useCallback(
+    (
+      rawPlayerScore: number,
+      rawAiScore: number,
+      playerRack: Tile[],
+      aiRack: Tile[],
+      playerWentOut: boolean,
+      aiWentOut: boolean,
+    ) => {
+      const playerPenalty = rackTileScore(playerRack)
+      const aiPenalty = rackTileScore(aiRack)
+      let player = rawPlayerScore - playerPenalty
+      let ai = rawAiScore - aiPenalty
+      if (playerWentOut) player += aiPenalty
+      if (aiWentOut) ai += playerPenalty
+      return { player, ai }
+    },
+    [],
+  )
+
+  const endGame = useCallback(
+    async (
+      rawPlayerScore: number,
+      rawAiScore: number,
+      diff: Difficulty,
+      options?: { playerWentOut?: boolean; aiWentOut?: boolean },
+    ) => {
+      if (endingRef.current) return
+      endingRef.current = true
+      const { player: pScore, ai: aScore } = finalizeScores(
+        rawPlayerScore,
+        rawAiScore,
+        stateRef.current.playerRack,
+        stateRef.current.aiRack,
+        options?.playerWentOut ?? false,
+        options?.aiWentOut ?? false,
+      )
+      const playerWon = pScore > aScore
+      setPlayerScore(pScore)
+      setAiScore(aScore)
+      setWon(playerWon)
+      if (playerWon) {
+        await submitScore({
+          playerName: getPlayerName() ?? 'Unknown',
+          playerScore: pScore,
+          aiScore: aScore,
+          difference: pScore - aScore,
+          won: playerWon,
+          difficulty: diff,
+          timeLimitSeconds: stateRef.current.timeLimitSeconds,
+        })
+      }
+      setCurrentEntryId(null)
+      setTurn('player')
+      setBoard(cloneBoard(stateRef.current.committedBoard))
+      setScreen('end')
+    },
+    [finalizeScores],
+  )
 
   useEffect(() => {
     if (screen !== 'game' || turn !== 'player') return
@@ -159,7 +185,7 @@ export function useGame() {
     if (screen !== 'game' || turn !== 'player' || endingRef.current) return
     const loose = collectLooseTiles(board, committedBoard)
     if (noTilesLeftToPlay(playerRack, bag) && loose.length === 0) {
-      endGame(playerScore, aiScore, difficulty)
+      endGame(playerScore, aiScore, difficulty, { playerWentOut: true })
     }
   }, [screen, turn, playerRack, bag, board, committedBoard, playerScore, aiScore, difficulty, endGame])
 
@@ -173,7 +199,7 @@ export function useGame() {
   const handOffToPlayerOrEnd = useCallback(
     (playerRack: Tile[], nextBag: Tile[], pScore: number, aScore: number, diff: Difficulty) => {
       if (noTilesLeftToPlay(playerRack, nextBag)) {
-        endGame(pScore, aScore, diff)
+        endGame(pScore, aScore, diff, { playerWentOut: true })
         return
       }
       beginPlayerTurn(playerRack)
@@ -186,7 +212,7 @@ export function useGame() {
       board: Board
       aiRack: Tile[]
       bag: Tile[]
-      previousBoardScore: number
+      usedPremiumSquares: Set<string>
       aiScore: number
       playerScore: number
       difficulty: Difficulty
@@ -213,7 +239,7 @@ export function useGame() {
           board: snapshot.board,
           rack: snapshot.aiRack,
           dict: dictionary,
-          previousBoardScore: snapshot.previousBoardScore,
+          usedPremiumSquares: snapshot.usedPremiumSquares,
           difficulty: snapshot.difficulty,
         })
 
@@ -224,23 +250,24 @@ export function useGame() {
           const nextAiScore = snapshot.aiScore + result.move.moveScore
           setBoard(result.move.board)
           setCommittedBoard(cloneBoard(result.move.board))
-          setPreviousBoardScore(result.move.boardScore)
+          setUsedPremiumSquares(result.move.usedPremiumSquares)
           setPlayedWords((prev) => [
             ...prev,
-            ...wordsCompletedThisPlay(result.move.board, snapshot.board, 'ai'),
+            ...result.move.scoredWords.map((w) => ({ ...w, by: 'ai' as const })),
           ])
           setAiRack(nextRack)
           setBag(nextBag)
           setAiScore(nextAiScore)
+          const bingoNote = result.move.bingo ? ' (bingo +50)' : ''
           setAiSummary({
             type: 'play',
             word: result.move.word,
             score: result.move.moveScore,
-            detail: `AI played ${result.move.word} for +${result.move.moveScore}`,
+            detail: `AI played ${result.move.word} for +${result.move.moveScore}${bingoNote}`,
           })
           setMessage(null)
           if (noTilesLeftToPlay(nextRack, nextBag)) {
-            endGame(snapshot.playerScore, nextAiScore, snapshot.difficulty)
+            endGame(snapshot.playerScore, nextAiScore, snapshot.difficulty, { aiWentOut: true })
             return
           }
           handOffToPlayerOrEnd(
@@ -306,7 +333,7 @@ export function useGame() {
       setAiRack(aRack)
       setBoard(blank)
       setCommittedBoard(blank)
-      setPreviousBoardScore(0)
+      setUsedPremiumSquares(new Set())
       setPlayerScore(0)
       setAiScore(0)
       setTimeLeftMs(PLAYER_TIME_OPTIONS_MS[limit])
@@ -326,7 +353,7 @@ export function useGame() {
     const result = validateSubmission({
       workingBoard: s.board,
       committedBoard: s.committedBoard,
-      previousBoardScore: s.previousBoardScore,
+      usedPremiumSquares: s.usedPremiumSquares,
       dict: dictionary,
       rackTileIdsThisTurn,
     })
@@ -338,12 +365,15 @@ export function useGame() {
 
     const gained = result.moveScore ?? 0
     const newPlayerScore = s.playerScore + gained
-    const banked = result.boardScore ?? s.previousBoardScore
     setPlayerScore(newPlayerScore)
     setCommittedBoard(cloneBoard(s.board))
-    setPreviousBoardScore(banked)
-    setPlayedWords((prev) => [...prev, ...wordsCompletedThisPlay(s.board, s.committedBoard, 'player')])
-    setMessage(gained > 0 ? `+${gained} points` : 'Board valid — no score gain')
+    if (result.usedPremiumSquares) setUsedPremiumSquares(result.usedPremiumSquares)
+    setPlayedWords((prev) => [
+      ...prev,
+      ...(result.scoredWords ?? []).map((w) => ({ ...w, by: 'player' as const })),
+    ])
+    const bingoNote = result.bingo ? ' (bingo +50)' : ''
+    setMessage(gained > 0 ? `+${gained} points${bingoNote}` : 'Board valid — no score gain')
     setSelectedTileId(null)
     setSelectedCell(null)
 
@@ -354,7 +384,7 @@ export function useGame() {
     setBag(nextBag)
 
     if (noTilesLeftToPlay(filled, nextBag)) {
-      endGame(newPlayerScore, s.aiScore, s.difficulty)
+      endGame(newPlayerScore, s.aiScore, s.difficulty, { playerWentOut: true })
       return
     }
 
@@ -362,7 +392,7 @@ export function useGame() {
       board: s.board,
       aiRack: s.aiRack,
       bag: nextBag,
-      previousBoardScore: banked,
+      usedPremiumSquares: result.usedPremiumSquares ?? s.usedPremiumSquares,
       aiScore: s.aiScore,
       playerScore: newPlayerScore,
       difficulty: s.difficulty,
@@ -413,7 +443,7 @@ export function useGame() {
       board: restored,
       aiRack: s.aiRack,
       bag: swapped.bag,
-      previousBoardScore: s.previousBoardScore,
+      usedPremiumSquares: s.usedPremiumSquares,
       aiScore: s.aiScore,
       playerScore: s.playerScore,
       difficulty: s.difficulty,
@@ -517,6 +547,24 @@ export function useGame() {
     setScreen('start')
   }, [])
 
+  const playPreview = useMemo(() => {
+    if (screen !== 'game' || turn !== 'player') return null
+
+    const newIds = newTileIdsBetweenBoards(committedBoard, board)
+    const rackNewIds = new Set<string>()
+    for (const id of newIds) {
+      if (rackTileIdsThisTurn.has(id)) rackNewIds.add(id)
+    }
+    if (rackNewIds.size === 0) return null
+
+    const result = scorePlay(board, rackNewIds, usedPremiumSquares)
+    return {
+      moveScore: result.moveScore,
+      words: result.words,
+      bingo: result.bingo,
+    }
+  }, [screen, turn, board, committedBoard, usedPremiumSquares, rackTileIdsThisTurn])
+
   return {
     screen,
     difficulty,
@@ -538,6 +586,7 @@ export function useGame() {
     won,
     currentEntryId,
     playedWords,
+    playPreview,
     startGame,
     selectRackTile,
     selectCell,

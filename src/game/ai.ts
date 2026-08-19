@@ -1,6 +1,6 @@
 import { BOARD_SIZE, CENTER, AI_TIME_MS } from './constants'
 import { cloneBoard, getOccupiedPositions } from './board'
-import { validateBoard, moveScore } from './scoring'
+import { validateBoard, newTileIdsBetweenBoards, scorePlay } from './scoring'
 import type { Dictionary } from './dictionary'
 import type { Board, CandidateMove, Difficulty, Tile } from './types'
 
@@ -162,7 +162,7 @@ export function findAiMoves(
   board: Board,
   rack: Tile[],
   dict: Dictionary,
-  previousBoardScore: number,
+  usedPremiumSquares: Set<string>,
   difficulty: Difficulty,
   timeLimitMs = AI_TIME_MS,
 ): CandidateMove[] {
@@ -217,12 +217,16 @@ export function findAiMoves(
             seen.add(key)
             const check = validateBoard(applied.board, dict)
             if (!check.ok) continue
+            const newTileIds = newTileIdsBetweenBoards(board, applied.board)
+            const playScore = scorePlay(applied.board, newTileIds, usedPremiumSquares)
             candidates.push({
               board: applied.board,
               rack: applied.rack,
               word,
-              moveScore: moveScore(check.boardScore, previousBoardScore),
-              boardScore: check.boardScore,
+              moveScore: playScore.moveScore,
+              usedPremiumSquares: playScore.usedPremiumSquares,
+              scoredWords: playScore.words,
+              bingo: playScore.bingo,
             })
             if (candidates.length >= maxCandidates) break
           }
@@ -289,13 +293,16 @@ export function findAiMoves(
 
             const check = validateBoard(applied.board, dict)
             if (!check.ok) continue
-
+            const newTileIds = newTileIdsBetweenBoards(board, applied.board)
+            const playScore = scorePlay(applied.board, newTileIds, usedPremiumSquares)
             candidates.push({
               board: applied.board,
               rack: applied.rack,
               word,
-              moveScore: moveScore(check.boardScore, previousBoardScore),
-              boardScore: check.boardScore,
+              moveScore: playScore.moveScore,
+              usedPremiumSquares: playScore.usedPremiumSquares,
+              scoredWords: playScore.words,
+              bingo: playScore.bingo,
             })
           }
 
@@ -322,12 +329,16 @@ export function findAiMoves(
               seen.add(key)
               const check = validateBoard(applied.board, dict)
               if (!check.ok) continue
+              const newTileIds = newTileIdsBetweenBoards(board, applied.board)
+              const playScore = scorePlay(applied.board, newTileIds, usedPremiumSquares)
               candidates.push({
                 board: applied.board,
                 rack: applied.rack,
                 word,
-                moveScore: moveScore(check.boardScore, previousBoardScore),
-                boardScore: check.boardScore,
+                moveScore: playScore.moveScore,
+                usedPremiumSquares: playScore.usedPremiumSquares,
+                scoredWords: playScore.words,
+                bingo: playScore.bingo,
               })
             }
           }
@@ -358,11 +369,11 @@ export function runAiTurn(params: {
   board: Board
   rack: Tile[]
   dict: Dictionary
-  previousBoardScore: number
+  usedPremiumSquares: Set<string>
   difficulty: Difficulty
 }): { type: 'play'; move: CandidateMove } | { type: 'none' } {
-  const { board, rack, dict, previousBoardScore, difficulty } = params
-  const candidates = findAiMoves(board, rack, dict, previousBoardScore, difficulty, AI_TIME_MS)
+  const { board, rack, dict, usedPremiumSquares, difficulty } = params
+  const candidates = findAiMoves(board, rack, dict, usedPremiumSquares, difficulty, AI_TIME_MS)
   const move = chooseAiMove(candidates, difficulty)
   if (move) return { type: 'play', move }
   return { type: 'none' }

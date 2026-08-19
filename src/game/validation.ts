@@ -1,5 +1,5 @@
 import { boardTileIds, cloneBoard, occupiedCount } from './board'
-import { validateBoard, moveScore } from './scoring'
+import { newTileIdsBetweenBoards, scorePlay, validateBoard } from './scoring'
 import type { Dictionary } from './dictionary'
 import type { Board, Tile, ValidationResult } from './types'
 
@@ -12,19 +12,16 @@ import type { Board, Tile, ValidationResult } from './types'
 export function validateSubmission(params: {
   workingBoard: Board
   committedBoard: Board
-  previousBoardScore: number
+  usedPremiumSquares: Set<string>
   dict: Dictionary
   /** Tile ids that started this turn on the player rack (or were placed from rack this turn) */
   rackTileIdsThisTurn: Set<string>
 }): ValidationResult {
-  const { workingBoard, committedBoard, previousBoardScore, dict, rackTileIdsThisTurn } =
-    params
+  const { workingBoard, committedBoard, usedPremiumSquares, dict, rackTileIdsThisTurn } = params
 
   const committedIds = boardTileIds(committedBoard)
   const workingIds = boardTileIds(workingBoard)
 
-  // All committed tiles must still be on the board (player may rearrange but not remove permanently without recalling)
-  // Spec: player may rearrange all tiles on the board — implies committed tiles stay in play.
   for (const id of committedIds) {
     if (!workingIds.has(id)) {
       return {
@@ -61,12 +58,16 @@ export function validateSubmission(params: {
     return { ok: false, reason: boardCheck.reason, words: boardCheck.words }
   }
 
-  const ms = moveScore(boardCheck.boardScore, previousBoardScore)
+  const newTileIds = newTileIdsBetweenBoards(committedBoard, workingBoard)
+  const playScore = scorePlay(workingBoard, newTileIds, usedPremiumSquares)
+
   return {
     ok: true,
     words: boardCheck.words,
-    boardScore: boardCheck.boardScore,
-    moveScore: ms,
+    moveScore: playScore.moveScore,
+    usedPremiumSquares: playScore.usedPremiumSquares,
+    scoredWords: playScore.words,
+    bingo: playScore.bingo,
   }
 }
 
@@ -85,7 +86,6 @@ export function placeWordOnBoard(
     const existing = board[r][c]
     if (existing) {
       if (existing.letter !== tile.letter) return null
-      // reuse existing tile — skip consuming this rack tile by using existing
     } else {
       board[r][c] = tile
     }

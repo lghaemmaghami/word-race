@@ -54,8 +54,20 @@ export function loadLeaderboard(): LeaderboardEntry[] {
   }
 }
 
-export function saveLeaderboardEntry(entry: Omit<LeaderboardEntry, 'id'>): LeaderboardEntry[] {
-  const list = loadLeaderboard()
+export function saveLeaderboardEntry(entry: Omit<LeaderboardEntry, 'id'>): LeaderboardEntry {
+  const raw = localStorage.getItem(KEY)
+  let list: LeaderboardEntry[] = []
+  try {
+    if (raw && raw.length <= 50_000) {
+      const parsed: unknown = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        list = parsed
+          .slice(0, MAX_ENTRIES * 2)
+          .map(sanitizeEntry)
+          .filter((e): e is LeaderboardEntry => e !== null)
+      }
+    }
+  } catch { /* use empty list */ }
   const full: LeaderboardEntry = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     date: entry.date,
@@ -69,7 +81,7 @@ export function saveLeaderboardEntry(entry: Omit<LeaderboardEntry, 'id'>): Leade
   list.sort((a, b) => b.playerScore - a.playerScore)
   const trimmed = list.slice(0, MAX_ENTRIES)
   localStorage.setItem(KEY, JSON.stringify(trimmed))
-  return trimmed
+  return full
 }
 
 export function formatDifficulty(d: Difficulty): string {

@@ -12,6 +12,7 @@ interface EndScreenProps {
   difficulty: Difficulty
   board: Board
   playedWords: PlayedWord[]
+  currentEntryId: string | null
   onPlayAgain: () => void
   onHome: () => void
 }
@@ -76,6 +77,7 @@ export function EndScreen({
   difficulty,
   board,
   playedWords,
+  currentEntryId,
   onPlayAgain,
   onHome,
 }: EndScreenProps) {
@@ -156,7 +158,7 @@ export function EndScreen({
         ) : (
           <ol>
             {leaders.map((e, i) => (
-              <li key={e.id} className={i === 0 ? 'is-top' : ''}>
+              <li key={e.id} className={e.id === currentEntryId ? 'is-current' : ''}>
                 <span className="rank">{i + 1}</span>
                 <span className="pts">{e.playerScore}</span>
                 <span className="detail">

@@ -66,6 +66,7 @@ export function useGame() {
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null)
   const [rackTileIdsThisTurn, setRackTileIdsThisTurn] = useState<Set<string>>(() => new Set())
   const [won, setWon] = useState(false)
+  const [currentEntryId, setCurrentEntryId] = useState<string | null>(null)
   const [playedWords, setPlayedWords] = useState<PlayedWord[]>([])
 
   const endingRef = useRef(false)
@@ -121,7 +122,7 @@ export function useGame() {
     endingRef.current = true
     const playerWon = pScore > aScore
     setWon(playerWon)
-    saveLeaderboardEntry({
+    const saved = saveLeaderboardEntry({
       date: new Date().toISOString(),
       playerScore: pScore,
       aiScore: aScore,
@@ -129,6 +130,7 @@ export function useGame() {
       won: playerWon,
       difficulty: diff,
     })
+    setCurrentEntryId(saved.id)
     setTurn('player')
     setBoard(cloneBoard(stateRef.current.committedBoard))
     setScreen('end')
@@ -529,6 +531,7 @@ export function useGame() {
     message,
     bagCount: bag.length,
     won,
+    currentEntryId,
     playedWords,
     startGame,
     selectRackTile,

@@ -262,7 +262,7 @@
   border: 1px solid rgba(255, 255, 250, 0.12);
 }
 
-.leaderboard li.is-top {
+.leaderboard li.is-current {
   border-color: #4fb477;
   background: #38363c;
 }

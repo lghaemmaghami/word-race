@@ -156,9 +156,9 @@ export function EndScreen({
 
       <section className="leaderboard">
         <h2>Leaderboard</h2>
-        <p className="leaderboard-note">Ranked by highest winning score</p>
+        <p className="leaderboard-note">Top 10 scores</p>
         {leaders.length === 0 ? (
-          <p className="status-line">No wins yet.</p>
+          <p className="status-line">No scores yet.</p>
         ) : (
           <ol>
             {leaders.map((e, i) => (

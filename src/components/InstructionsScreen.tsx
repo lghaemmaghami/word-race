@@ -8,14 +8,17 @@ export function InstructionsScreen({ onBack }: InstructionsScreenProps) {
       <header className="brand-block compact instructions-header">
         <p className="eyebrow">How to play</p>
         <h1 className="brand instructions-title">Word Race</h1>
-        <p className="tagline">Beat the AI on one shared board before your clock hits zero.</p>
+        <p className="tagline">Beat the AI on one shared board — with or without a clock.</p>
       </header>
 
       <section className="instructions-panel" aria-label="Game instructions">
         <ol className="instructions-list">
           <li>
             <strong>Your clock</strong>
-            <span>Choose 90 or 180 seconds of active time on the home screen. The clock pauses while the AI thinks.</span>
+            <span>
+              Choose 90s, 180s, or No timer on the home screen. Timed games count only your active turns — the clock
+              pauses while the AI thinks. Untimed games end when the tiles run out.
+            </span>
           </li>
           <li>
             <strong>Place tiles</strong>
@@ -40,7 +43,10 @@ export function InstructionsScreen({ onBack }: InstructionsScreenProps) {
           </li>
           <li>
             <strong>Win</strong>
-            <span>The game ends when time runs out, or when the bag and a player’s rack are both empty. Highest score wins.</span>
+            <span>
+              Timed games end when your clock hits zero or the tiles run out. Untimed games end only when the bag and a
+              player&apos;s rack are both empty. Highest score wins.
+            </span>
           </li>
         </ol>
       </section>

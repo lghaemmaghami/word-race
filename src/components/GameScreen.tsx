@@ -1,9 +1,11 @@
+import { isTimedMode } from '../game/constants'
 import { BoardView, RackView } from './BoardView'
 import type { useGame } from '../game/useGame'
 
 type Game = ReturnType<typeof useGame>
 
 export function GameScreen({ game }: { game: Game }) {
+  const timed = isTimedMode(game.timeLimitSeconds)
   const seconds = Math.ceil(game.timeLeftMs / 1000)
   const playerTurn = game.turn === 'player'
   const status = game.message ?? (game.aiSummary ? game.aiSummary.detail : null)
@@ -12,10 +14,12 @@ export function GameScreen({ game }: { game: Game }) {
     <div className="screen game-screen">
       <header className="game-hud">
         <div className="hud-brand">Word Race</div>
-        <div className={`timer ${seconds <= 15 ? 'is-low' : ''}`} aria-live="polite">
-          <span className="timer-label">Time</span>
-          <span className="timer-value">{seconds}s</span>
-        </div>
+        {timed ? (
+          <div className={`timer ${seconds <= 15 ? 'is-low' : ''}`} aria-live="polite">
+            <span className="timer-label">Time</span>
+            <span className="timer-value">{seconds}s</span>
+          </div>
+        ) : null}
         <div className="scores">
           <div className="score player">
             <span>You</span>

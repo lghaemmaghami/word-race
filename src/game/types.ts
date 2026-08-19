@@ -44,6 +44,7 @@ export interface LeaderboardEntry {
   difference: number
   won: boolean
   difficulty: Difficulty
+  timeLimitSeconds: TimeLimitSeconds
 }
 
 export interface ValidationResult {

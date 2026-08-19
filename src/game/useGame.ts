@@ -82,6 +82,7 @@ export function useGame() {
     playerScore,
     aiScore,
     difficulty,
+    timeLimitSeconds,
   })
 
   playerRackRef.current = playerRack
@@ -95,6 +96,7 @@ export function useGame() {
     playerScore,
     aiScore,
     difficulty,
+    timeLimitSeconds,
   }
 
   useEffect(() => {
@@ -129,6 +131,7 @@ export function useGame() {
       difference: pScore - aScore,
       won: playerWon,
       difficulty: diff,
+      timeLimitSeconds: stateRef.current.timeLimitSeconds,
     })
     setCurrentEntryId(null)
     setTurn('player')

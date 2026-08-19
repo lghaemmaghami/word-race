@@ -1,4 +1,4 @@
-import type { Difficulty, LeaderboardEntry } from './types'
+import type { Difficulty, LeaderboardEntry, TimeLimitSeconds } from './types'
 
 const PLAYER_NAME_KEY = 'word-race-player-name'
 const MAX_ENTRIES = 10
@@ -33,6 +33,9 @@ function sanitizeEntry(value: unknown): LeaderboardEntry | null {
       ? raw.playerName
       : 'Unknown'
 
+  const timeLimitSeconds: TimeLimitSeconds =
+    raw.timeLimitSeconds === 90 || raw.timeLimitSeconds === 180 ? raw.timeLimitSeconds : 90
+
   return {
     id: raw.id,
     date: raw.date,
@@ -42,6 +45,7 @@ function sanitizeEntry(value: unknown): LeaderboardEntry | null {
     difference: Math.trunc(raw.difference),
     won: raw.won,
     difficulty: raw.difficulty,
+    timeLimitSeconds,
   }
 }
 
@@ -79,6 +83,7 @@ export async function submitScore(entry: {
   difference: number
   won: boolean
   difficulty: Difficulty
+  timeLimitSeconds: TimeLimitSeconds
 }): Promise<void> {
   if (!DB_URL) return
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`

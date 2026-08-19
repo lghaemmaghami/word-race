@@ -306,6 +306,10 @@
   margin-left: auto;
 }
 
+.leaderboard .lb-hard .pts {
+  color: #ab87ff;
+}
+
 .game-hud {
   display: grid;
   grid-template-columns: 1fr auto 1fr;

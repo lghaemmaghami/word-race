@@ -163,16 +163,14 @@ export function EndScreen({
           <ol>
             {leaders.map((e, i) => (
               <li key={e.id} className={e.id === currentEntryId ? 'is-current' : ''}>
-                <span className="rank">{i + 1}</span>
-                <span className="leader-name">{e.playerName}</span>
-                <span className="pts">{e.playerScore}</span>
-                <span className="detail">
-                  <span className="detail-vs">vs {e.aiScore}</span>
-                  <span className="detail-sep">·</span>
-                  <span>{formatDifficulty(e.difficulty)}</span>
-                  {e.won ? <span className="detail-sep">·</span> : null}
-                  {e.won ? <span className="detail-win">Win</span> : null}
-                </span>
+                <div className="lb-row">
+                  <span className="rank">{i + 1}</span>
+                  <span className="leader-name">{e.playerName}</span>
+                  <span className="pts">{e.playerScore}</span>
+                </div>
+                <div className="lb-sub">
+                  vs {e.aiScore} · {formatDifficulty(e.difficulty)}{e.won ? ' · Win' : ''}
+                </div>
               </li>
             ))}
           </ol>

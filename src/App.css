@@ -252,10 +252,7 @@
 }
 
 .leaderboard li {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  padding: 0.6rem 0.85rem;
+  padding: 0.55rem 0.85rem;
   border-radius: 12px;
   background: #333138;
   border: 1px solid rgba(255, 255, 250, 0.10);
@@ -264,6 +261,19 @@
 .leaderboard li.is-current {
   border-color: #4fb477;
   background: #38363c;
+}
+
+.lb-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+}
+
+.lb-sub {
+  margin-top: 0.15rem;
+  padding-left: 1.75rem;
+  color: rgba(255, 255, 250, 0.4);
+  font-size: 0.78rem;
 }
 
 .leaderboard .rank {
@@ -293,44 +303,7 @@
   font-variant-numeric: tabular-nums;
   color: #4fb477;
   flex-shrink: 0;
-}
-
-.leaderboard .detail {
-  display: flex;
-  align-items: baseline;
-  gap: 0.25rem;
-  color: rgba(255, 255, 250, 0.45);
-  font-size: 0.78rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.leaderboard .detail-sep {
-  color: rgba(255, 255, 250, 0.25);
-}
-
-.leaderboard .detail-win {
-  color: #4fb477;
-  font-weight: 600;
-}
-
-.leaderboard .detail-vs {
-  color: rgba(255, 255, 250, 0.45);
-}
-
-/* Start screen preview */
-.leaderboard.preview li {
-  gap: 0.5rem;
-}
-
-.leaderboard.preview .leader-name {
-  color: rgba(255, 255, 250, 0.85);
-}
-
-.leaderboard.preview li span:last-child {
-  color: rgba(255, 255, 250, 0.4);
-  font-size: 0.82rem;
-  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .game-hud {

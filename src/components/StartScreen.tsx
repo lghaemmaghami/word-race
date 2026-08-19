@@ -99,10 +99,12 @@ export function StartScreen({ dictReady, dictError, onStart, playerName }: Start
           <ol>
             {leaders.map((e, i) => (
               <li key={e.id}>
-                <span className="rank">{i + 1}</span>
-                <span className="leader-name">{e.playerName}</span>
-                <span className="pts">{e.playerScore}</span>
-                <span>{formatDifficulty(e.difficulty)}</span>
+                <div className="lb-row">
+                  <span className="rank">{i + 1}</span>
+                  <span className="leader-name">{e.playerName}</span>
+                  <span className="pts">{e.playerScore}</span>
+                </div>
+                <div className="lb-sub">{formatDifficulty(e.difficulty)}</div>
               </li>
             ))}
           </ol>

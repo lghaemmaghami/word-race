@@ -124,15 +124,17 @@ export function useGame() {
     endingRef.current = true
     const playerWon = pScore > aScore
     setWon(playerWon)
-    await submitScore({
-      playerName: getPlayerName() ?? 'Unknown',
-      playerScore: pScore,
-      aiScore: aScore,
-      difference: pScore - aScore,
-      won: playerWon,
-      difficulty: diff,
-      timeLimitSeconds: stateRef.current.timeLimitSeconds,
-    })
+    if (playerWon) {
+      await submitScore({
+        playerName: getPlayerName() ?? 'Unknown',
+        playerScore: pScore,
+        aiScore: aScore,
+        difference: pScore - aScore,
+        won: playerWon,
+        difficulty: diff,
+        timeLimitSeconds: stateRef.current.timeLimitSeconds,
+      })
+    }
     setCurrentEntryId(null)
     setTurn('player')
     setBoard(cloneBoard(stateRef.current.committedBoard))

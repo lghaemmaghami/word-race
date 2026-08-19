@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test:dict": "npx --yes tsx scripts/verify-dictionary.ts"
+    "test:dict": "npx --yes tsx scripts/verify-dictionary.ts",
+    "test:score": "npx --yes tsx scripts/verify-scoring.ts"
   },
   "dependencies": {
     "react": "^19.2.8",

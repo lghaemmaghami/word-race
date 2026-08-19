@@ -3,13 +3,9 @@ import type { Difficulty, LeaderboardEntry } from './types'
 const PLAYER_NAME_KEY = 'word-race-player-name'
 const MAX_ENTRIES = 10
 const MAX_SCORE = 1_000_000
-const MAX_ID_LEN = 64
-const MAX_DATE_LEN = 64
 const MAX_NAME_LEN = 32
 
-const REPO = 'lghaemmaghami/word-race'
-const LEADERBOARD_URL = import.meta.env.BASE_URL + 'leaderboard.json'
-const GH_TOKEN = import.meta.env.VITE_GH_TOKEN as string | undefined
+const DB_URL = import.meta.env.VITE_FIREBASE_DB_URL as string | undefined
 
 function isDifficulty(value: unknown): value is Difficulty {
   return value === 'easy' || value === 'hard'
@@ -23,8 +19,8 @@ function sanitizeEntry(value: unknown): LeaderboardEntry | null {
   if (!value || typeof value !== 'object') return null
   const raw = value as Record<string, unknown>
 
-  if (typeof raw.id !== 'string' || raw.id.length === 0 || raw.id.length > MAX_ID_LEN) return null
-  if (typeof raw.date !== 'string' || raw.date.length === 0 || raw.date.length > MAX_DATE_LEN) return null
+  if (typeof raw.id !== 'string' || raw.id.length === 0) return null
+  if (typeof raw.date !== 'string' || raw.date.length === 0) return null
   if (!isFiniteNumber(raw.playerScore) || raw.playerScore < 0 || raw.playerScore > MAX_SCORE) return null
   if (!isFiniteNumber(raw.aiScore) || raw.aiScore < 0 || raw.aiScore > MAX_SCORE) return null
   if (!isFiniteNumber(raw.difference) || Math.abs(raw.difference) > MAX_SCORE) return null
@@ -49,25 +45,23 @@ function sanitizeEntry(value: unknown): LeaderboardEntry | null {
 }
 
 let cachedLeaderboard: LeaderboardEntry[] = []
-let lastFetchMs = 0
-const CACHE_TTL_MS = 30_000
 
 export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
-  if (Date.now() - lastFetchMs < CACHE_TTL_MS && cachedLeaderboard.length > 0) {
-    return cachedLeaderboard
-  }
+  if (!DB_URL) return cachedLeaderboard
   try {
-    const res = await fetch(LEADERBOARD_URL, { cache: 'no-store' })
+    const res = await fetch(
+      `${DB_URL}/leaderboard.json?orderBy="playerScore"&limitToLast=${MAX_ENTRIES}`,
+    )
     if (!res.ok) return cachedLeaderboard
-    const parsed: unknown = await res.json()
-    if (!Array.isArray(parsed)) return cachedLeaderboard
-    cachedLeaderboard = parsed
-      .slice(0, MAX_ENTRIES * 2)
+    const data: unknown = await res.json()
+    if (!data || typeof data !== 'object') return []
+    const entries = Object.values(data as Record<string, unknown>)
       .map(sanitizeEntry)
       .filter((e): e is LeaderboardEntry => e !== null)
+      .sort((a, b) => b.playerScore - a.playerScore)
       .slice(0, MAX_ENTRIES)
-    lastFetchMs = Date.now()
-    return cachedLeaderboard
+    cachedLeaderboard = entries
+    return entries
   } catch {
     return cachedLeaderboard
   }
@@ -85,22 +79,21 @@ export async function submitScore(entry: {
   won: boolean
   difficulty: Difficulty
 }): Promise<void> {
-  if (!GH_TOKEN) return
+  if (!DB_URL) return
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  const full: LeaderboardEntry = {
+    id,
+    date: new Date().toISOString(),
+    ...entry,
+  }
   try {
-    await fetch(`https://api.github.com/repos/${REPO}/dispatches`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${GH_TOKEN}`,
-        Accept: 'application/vnd.github+json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        event_type: 'update-leaderboard',
-        client_payload: entry,
-      }),
+    await fetch(`${DB_URL}/leaderboard/${id}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(full),
     })
   } catch {
-    // fire-and-forget
+    // best-effort
   }
 }
 

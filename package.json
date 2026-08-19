@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test:dict": "npx --yes tsx scripts/verify-dictionary.ts",
+    "test:definitions": "npx --yes tsx scripts/verify-definitions.ts",
     "test:score": "npx --yes tsx scripts/verify-scoring.ts"
   },
   "dependencies": {

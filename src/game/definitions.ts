@@ -34,15 +34,32 @@ interface WiktionarySenseGroup {
   definitions?: Array<{ definition?: string }>
 }
 
+/** Wiktionary uses "symbol" for glyph/notation senses rather than ordinary vocabulary. */
+const SYMBOL_PART_OF_SPEECH = 'symbol'
+
+function normalizePartOfSpeech(pos: string): string {
+  return pos.trim().toLowerCase()
+}
+
+function isLinguisticPartOfSpeech(pos: string): boolean {
+  return normalizePartOfSpeech(pos) !== SYMBOL_PART_OF_SPEECH
+}
+
+function isEnglishLanguage(language: string | undefined): boolean {
+  const lang = (language ?? '').trim().toLowerCase()
+  return !lang || lang === 'english'
+}
+
 function sanitizeText(value: unknown, max = MAX_TEXT_LEN): string | null {
   if (typeof value !== 'string') return null
-  const cleaned = stripHtml(value)
+  const cleaned = formatDefinitionText(value)
   if (!cleaned) return null
   return cleaned.slice(0, max)
 }
 
 function stripHtml(html: string): string {
   return html
+    .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<[^>]*>/g, ' ')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
@@ -52,6 +69,18 @@ function stripHtml(html: string): string {
     .replace(/&gt;/gi, '>')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+function normalizePunctuationSpacing(text: string): string {
+  return text
+    .replace(/\s+([.,;:!?)\]}])/g, '$1')
+    .replace(/([([{])\s+/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+export function formatDefinitionText(text: string): string {
+  return normalizePunctuationSpacing(stripHtml(text))
 }
 
 function normalizeLookupWord(word: string): string | null {
@@ -70,12 +99,13 @@ function fromApi(entries: DictionaryApiEntry[], fallbackWord: string): WordDefin
   const senses: DefinitionSense[] = []
   for (const entry of entries) {
     for (const meaning of entry.meanings ?? []) {
+      const partOfSpeech = sanitizeText(meaning.partOfSpeech, 40) || 'unknown'
+      if (!isLinguisticPartOfSpeech(partOfSpeech)) continue
       for (const item of meaning.definitions ?? []) {
         const definition = sanitizeText(item.definition)
         if (!definition) continue
-        const partOfSpeech = sanitizeText(meaning.partOfSpeech, 40) || 'unknown'
         const example = sanitizeText(item.example) ?? undefined
-        senses.push({ partOfSpeech, definition, example })
+        senses.push({ partOfSpeech: normalizePartOfSpeech(partOfSpeech), definition, example })
         if (senses.length >= 4) break
       }
       if (senses.length >= 4) break
@@ -90,20 +120,21 @@ function fromApi(entries: DictionaryApiEntry[], fallbackWord: string): WordDefin
 
 function fromWiktionary(payload: Record<string, WiktionarySenseGroup[]>, word: string): WordDefinition | null {
   if (!payload || typeof payload !== 'object') return null
-  const groups = [...(payload.en ?? []), ...Object.values(payload).flat()]
+  const groups = payload.en ?? []
   const senses: DefinitionSense[] = []
   const seen = new Set<string>()
 
   for (const group of groups) {
     if (!group || typeof group !== 'object') continue
-    const language = (group.language ?? '').toLowerCase()
-    if (language && language !== 'english' && language !== 'translingual') continue
+    if (!isEnglishLanguage(group.language)) continue
+    const partOfSpeech = sanitizeText(group.partOfSpeech, 40) || 'unknown'
+    if (!isLinguisticPartOfSpeech(partOfSpeech)) continue
     for (const item of group.definitions ?? []) {
       const definition = item?.definition ? sanitizeText(item.definition) : null
       if (!definition || seen.has(definition)) continue
       seen.add(definition)
       senses.push({
-        partOfSpeech: (sanitizeText(group.partOfSpeech, 40) || 'unknown').toLowerCase(),
+        partOfSpeech: normalizePartOfSpeech(partOfSpeech),
         definition,
       })
       if (senses.length >= 4) break

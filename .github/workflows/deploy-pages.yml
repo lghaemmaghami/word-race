@@ -32,6 +32,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_FIREBASE_DB_URL: ${{ secrets.FIREBASE_DB_URL }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

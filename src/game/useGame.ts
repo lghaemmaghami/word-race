@@ -117,22 +117,19 @@ export function useGame() {
     }
   }, [])
 
-  const endGame = useCallback((pScore: number, aScore: number, diff: Difficulty) => {
+  const endGame = useCallback(async (pScore: number, aScore: number, diff: Difficulty) => {
     if (endingRef.current) return
     endingRef.current = true
     const playerWon = pScore > aScore
     setWon(playerWon)
-    const scoreEntry = {
+    await submitScore({
       playerName: getPlayerName() ?? 'Unknown',
       playerScore: pScore,
       aiScore: aScore,
       difference: pScore - aScore,
       won: playerWon,
       difficulty: diff,
-    }
-    if (playerWon) {
-      void submitScore(scoreEntry)
-    }
+    })
     setCurrentEntryId(null)
     setTurn('player')
     setBoard(cloneBoard(stateRef.current.committedBoard))

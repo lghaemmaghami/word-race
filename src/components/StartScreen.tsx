@@ -95,7 +95,7 @@ export function StartScreen({ dictReady, dictError, onStart, playerName }: Start
 
       {leaders.length > 0 && (
         <section className="leaderboard preview">
-          <h2>Top wins</h2>
+          <h2>Top scores</h2>
           <ol>
             {leaders.map((e) => (
               <li key={e.id}>

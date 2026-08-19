@@ -47,7 +47,7 @@ export function loadLeaderboard(): LeaderboardEntry[] {
     return parsed
       .slice(0, MAX_ENTRIES * 2)
       .map(sanitizeEntry)
-      .filter((entry): entry is LeaderboardEntry => entry !== null)
+      .filter((entry): entry is LeaderboardEntry => entry !== null && entry.won)
       .slice(0, MAX_ENTRIES)
   } catch {
     return []

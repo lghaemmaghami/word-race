@@ -150,9 +150,9 @@ export function EndScreen({
 
       <section className="leaderboard">
         <h2>Leaderboard</h2>
-        <p className="leaderboard-note">Ranked by highest player score</p>
+        <p className="leaderboard-note">Ranked by highest winning score</p>
         {leaders.length === 0 ? (
-          <p className="status-line">No games yet.</p>
+          <p className="status-line">No wins yet.</p>
         ) : (
           <ol>
             {leaders.map((e, i) => (
@@ -164,7 +164,7 @@ export function EndScreen({
                   <span className="detail-sep">·</span>
                   <span>{formatDifficulty(e.difficulty)}</span>
                   <span className="detail-sep">·</span>
-                  <span className={e.won ? 'detail-win' : 'detail-loss'}>{e.won ? 'Win' : 'Loss'}</span>
+                  <span className="detail-win">Win</span>
                 </span>
               </li>
             ))}

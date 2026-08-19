@@ -12,6 +12,7 @@ interface EndScreenProps {
   difficulty: Difficulty
   board: Board
   playedWords: PlayedWord[]
+  currentEntryId: string | null
   onPlayAgain: () => void
   onHome: () => void
 }
@@ -76,6 +77,7 @@ export function EndScreen({
   difficulty,
   board,
   playedWords,
+  currentEntryId,
   onPlayAgain,
   onHome,
 }: EndScreenProps) {
@@ -150,13 +152,13 @@ export function EndScreen({
 
       <section className="leaderboard">
         <h2>Leaderboard</h2>
-        <p className="leaderboard-note">Ranked by highest player score</p>
+        <p className="leaderboard-note">Ranked by highest winning score</p>
         {leaders.length === 0 ? (
-          <p className="status-line">No games yet.</p>
+          <p className="status-line">No wins yet.</p>
         ) : (
           <ol>
             {leaders.map((e, i) => (
-              <li key={e.id} className={i === 0 ? 'is-top' : ''}>
+              <li key={e.id} className={e.id === currentEntryId ? 'is-current' : ''}>
                 <span className="rank">{i + 1}</span>
                 <span className="pts">{e.playerScore}</span>
                 <span className="detail">
@@ -164,7 +166,7 @@ export function EndScreen({
                   <span className="detail-sep">·</span>
                   <span>{formatDifficulty(e.difficulty)}</span>
                   <span className="detail-sep">·</span>
-                  <span className={e.won ? 'detail-win' : 'detail-loss'}>{e.won ? 'Win' : 'Loss'}</span>
+                  <span className="detail-win">Win</span>
                 </span>
               </li>
             ))}

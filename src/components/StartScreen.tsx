@@ -90,13 +90,13 @@ export function StartScreen({ dictReady, dictError, onStart }: StartScreenProps)
 
       {leaders.length > 0 && (
         <section className="leaderboard preview">
-          <h2>Top scores</h2>
+          <h2>Top wins</h2>
           <ol>
             {leaders.map((e) => (
               <li key={e.id}>
                 <span>{e.playerScore}</span>
                 <span>
-                  {formatDifficulty(e.difficulty)} · {e.won ? 'Win' : 'Loss'}
+                  {formatDifficulty(e.difficulty)}
                 </span>
               </li>
             ))}

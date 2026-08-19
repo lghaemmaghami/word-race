@@ -26,6 +26,7 @@ export default function App() {
         difficulty={game.difficulty}
         board={game.committedBoard}
         playedWords={game.playedWords}
+        currentEntryId={game.currentEntryId}
         onPlayAgain={game.playAgain}
         onHome={game.backToStart}
       />

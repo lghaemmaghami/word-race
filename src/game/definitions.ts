@@ -34,24 +34,15 @@ interface WiktionarySenseGroup {
   definitions?: Array<{ definition?: string }>
 }
 
-/** Parts of speech that describe glyphs or notation, not ordinary vocabulary. */
-const NON_LINGUISTIC_POS = new Set([
-  'symbol',
-  'letter',
-  'numeral',
-  'character',
-  'punctuation',
-  'sign',
-])
+/** Wiktionary uses "symbol" for glyph/notation senses rather than ordinary vocabulary. */
+const SYMBOL_PART_OF_SPEECH = 'symbol'
 
 function normalizePartOfSpeech(pos: string): string {
   return pos.trim().toLowerCase()
 }
 
 function isLinguisticPartOfSpeech(pos: string): boolean {
-  const key = normalizePartOfSpeech(pos)
-  if (!key || key === 'unknown') return true
-  return !NON_LINGUISTIC_POS.has(key)
+  return normalizePartOfSpeech(pos) !== SYMBOL_PART_OF_SPEECH
 }
 
 function isEnglishLanguage(language: string | undefined): boolean {

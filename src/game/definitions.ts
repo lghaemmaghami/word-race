@@ -52,13 +52,14 @@ function isEnglishLanguage(language: string | undefined): boolean {
 
 function sanitizeText(value: unknown, max = MAX_TEXT_LEN): string | null {
   if (typeof value !== 'string') return null
-  const cleaned = stripHtml(value)
+  const cleaned = formatDefinitionText(value)
   if (!cleaned) return null
   return cleaned.slice(0, max)
 }
 
 function stripHtml(html: string): string {
   return html
+    .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<[^>]*>/g, ' ')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
@@ -68,6 +69,18 @@ function stripHtml(html: string): string {
     .replace(/&gt;/gi, '>')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+function normalizePunctuationSpacing(text: string): string {
+  return text
+    .replace(/\s+([.,;:!?)\]}])/g, '$1')
+    .replace(/([([{])\s+/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+export function formatDefinitionText(text: string): string {
+  return normalizePunctuationSpacing(stripHtml(text))
 }
 
 function normalizeLookupWord(word: string): string | null {

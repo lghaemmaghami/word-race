@@ -170,6 +170,8 @@ export function EndScreen({
                   <span className="detail-vs">vs {e.aiScore}</span>
                   <span className="detail-sep">·</span>
                   <span>{formatDifficulty(e.difficulty)}</span>
+                  {e.won ? <span className="detail-sep">·</span> : null}
+                  {e.won ? <span className="detail-win">Win</span> : null}
                 </span>
               </li>
             ))}

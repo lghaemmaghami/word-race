@@ -10,6 +10,7 @@ export const PLAYER_TIME_OPTIONS_MS = {
 export const DEFAULT_PLAYER_TIME_SECONDS = 90 as const
 export const PLAYER_TIME_MS = PLAYER_TIME_OPTIONS_MS[DEFAULT_PLAYER_TIME_SECONDS]
 export const AI_TIME_MS = 5_000
+export const BINGO_BONUS = 50
 
 export const LETTER_VALUES: Record<string, number> = {
   A: 1, B: 3, C: 3, D: 2, E: 1, F: 4, G: 2, H: 4, I: 1, J: 8,

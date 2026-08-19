@@ -1,11 +1,41 @@
-import { BOARD_SIZE, CENTER, MULTIPLIERS, letterValue } from './constants'
+import { BOARD_SIZE, BINGO_BONUS, CENTER, MULTIPLIERS, letterValue } from './constants'
 import { getOccupiedPositions, boardTileIds } from './board'
-import type { Board, Multiplier, PlayedWord, TileOwner } from './types'
+import type { Board, Multiplier } from './types'
 import type { Dictionary } from './dictionary'
 
 export interface ExtractedWord {
   word: string
   cells: Array<{ row: number; col: number }>
+}
+
+export type WordBonus = Exclude<Multiplier, 'none'>
+
+export interface ScoredWord {
+  word: string
+  score: number
+  bonuses: WordBonus[]
+}
+
+export interface PlayScoreResult {
+  moveScore: number
+  words: ScoredWord[]
+  usedPremiumSquares: Set<string>
+  bingo: boolean
+}
+
+function premiumSquareKey(row: number, col: number): string {
+  return `${row},${col}`
+}
+
+export function newTileIdsBetweenBoards(previousBoard: Board, board: Board): Set<string> {
+  const prevIds = boardTileIds(previousBoard)
+  const newIds = new Set<string>()
+  for (const row of board) {
+    for (const cell of row) {
+      if (cell && !prevIds.has(cell.id)) newIds.add(cell.id)
+    }
+  }
+  return newIds
 }
 
 export function extractWords(board: Board): ExtractedWord[] {
@@ -50,24 +80,39 @@ export function extractWords(board: Board): ExtractedWord[] {
   return words
 }
 
-export function scoreWord(board: Board, cells: Array<{ row: number; col: number }>): number {
+/** Score one word for a single play using official Scrabble rules. */
+export function scoreWordForPlay(
+  board: Board,
+  cells: Array<{ row: number; col: number }>,
+  newTileIds: Set<string>,
+  usedPremiumSquares: Set<string>,
+): { score: number; appliedBonuses: WordBonus[] } {
   let letterSum = 0
   let wordMult = 1
+  const appliedBonuses: WordBonus[] = []
+
   for (const { row, col } of cells) {
     const tile = board[row][col]
     if (!tile) continue
-    let v = letterValue(tile.letter)
-    const m = MULTIPLIERS[row][col]
-    if (m === 'DL') v *= 2
-    else if (m === 'TL') v *= 3
-    else if (m === 'DW') wordMult *= 2
-    else if (m === 'TW') wordMult *= 3
-    letterSum += v
-  }
-  return letterSum * wordMult
-}
 
-export type WordBonus = Exclude<Multiplier, 'none'>
+    const squareKey = premiumSquareKey(row, col)
+    const multiplier = MULTIPLIERS[row][col]
+    const isNewTile = newTileIds.has(tile.id)
+    const premiumAvailable = multiplier !== 'none' && !usedPremiumSquares.has(squareKey)
+
+    let value = letterValue(tile.letter)
+    if (isNewTile && premiumAvailable) {
+      if (multiplier === 'DL') value *= 2
+      else if (multiplier === 'TL') value *= 3
+      else if (multiplier === 'DW') wordMult *= 2
+      else if (multiplier === 'TW') wordMult *= 3
+      appliedBonuses.push(multiplier)
+    }
+    letterSum += value
+  }
+
+  return { score: letterSum * wordMult, appliedBonuses }
+}
 
 export function bonusesOnWord(cells: Array<{ row: number; col: number }>): WordBonus[] {
   const bonuses: WordBonus[] = []
@@ -78,47 +123,76 @@ export function bonusesOnWord(cells: Array<{ row: number; col: number }>): WordB
   return bonuses
 }
 
-export interface ScoredWord {
-  word: string
-  score: number
-  bonuses: WordBonus[]
+/** Words that include at least one newly placed tile this turn. */
+export function listWordsCompletedByTiles(board: Board, tileIds: Set<string>): ExtractedWord[] {
+  if (tileIds.size === 0) return []
+  return extractWords(board).filter((w) =>
+    w.cells.some(({ row, col }) => {
+      const tile = board[row][col]
+      return tile != null && tileIds.has(tile.id)
+    }),
+  )
 }
 
-function toScoredWord(board: Board, extracted: ExtractedWord): ScoredWord {
+/**
+ * Official Scrabble turn score:
+ * - Sum every word formed or modified by tiles played this turn
+ * - Letter premiums (DL/TL) and word premiums (DW/TW) apply only to newly played tiles
+ *   on premium squares not yet used
+ * - Letter premiums are applied before word premiums
+ * - Cross words each score the shared letter with any premiums it earns
+ * - Playing all 7 rack tiles in one turn adds 50 (bingo)
+ */
+export function scorePlay(
+  board: Board,
+  newTileIds: Set<string>,
+  usedPremiumSquares: Set<string>,
+): PlayScoreResult {
+  const extracted = listWordsCompletedByTiles(board, newTileIds)
+  const scoredWords: ScoredWord[] = []
+  let moveScore = 0
+  const newlyUsedSquares = new Set<string>()
+
+  for (const extractedWord of extracted) {
+    const { score, appliedBonuses } = scoreWordForPlay(
+      board,
+      extractedWord.cells,
+      newTileIds,
+      usedPremiumSquares,
+    )
+    moveScore += score
+    scoredWords.push({
+      word: extractedWord.word,
+      score,
+      bonuses: appliedBonuses,
+    })
+
+    for (const { row, col } of extractedWord.cells) {
+      const tile = board[row][col]
+      if (!tile || !newTileIds.has(tile.id)) continue
+      const squareKey = premiumSquareKey(row, col)
+      const multiplier = MULTIPLIERS[row][col]
+      if (multiplier !== 'none' && !usedPremiumSquares.has(squareKey)) {
+        newlyUsedSquares.add(squareKey)
+      }
+    }
+  }
+
+  scoredWords.sort((a, b) => b.score - a.score || a.word.localeCompare(b.word))
+
+  const bingo = newTileIds.size === 7
+  if (bingo) moveScore += BINGO_BONUS
+
   return {
-    word: extracted.word,
-    score: scoreWord(board, extracted.cells),
-    bonuses: bonusesOnWord(extracted.cells),
+    moveScore,
+    words: scoredWords,
+    usedPremiumSquares: new Set([...usedPremiumSquares, ...newlyUsedSquares]),
+    bingo,
   }
 }
 
-function sortScoredWords<T extends ScoredWord>(words: T[]): T[] {
-  return words.sort((a, b) => b.score - a.score || a.word.localeCompare(b.word))
-}
-
-/** Every 2+ letter word on the board with its current multiplier score, highest first. */
-export function listScoredWords(board: Board): ScoredWord[] {
-  return sortScoredWords(extractWords(board).map((w) => toScoredWord(board, w)))
-}
-
-/** Words that include at least one of the given tiles, with scores at the current positions. */
-export function listWordsCompletedByTiles(board: Board, tileIds: Set<string>): ScoredWord[] {
-  if (tileIds.size === 0) return []
-  return extractWords(board)
-    .filter((w) =>
-      w.cells.some(({ row, col }) => {
-        const tile = board[row][col]
-        return tile != null && tileIds.has(tile.id)
-      }),
-    )
-    .map((w) => toScoredWord(board, w))
-    .sort((a, b) => b.word.length - a.word.length || b.score - a.score || a.word.localeCompare(b.word))
-}
-
-/** Total score of every 2+ letter word on the board (multipliers always applied by position). */
-export function scoreFullBoard(board: Board): number {
-  const words = extractWords(board)
-  return words.reduce((sum, w) => sum + scoreWord(board, w.cells), 0)
+export function rackTileScore(tiles: Array<{ letter: string }>): number {
+  return tiles.reduce((sum, tile) => sum + letterValue(tile.letter), 0)
 }
 
 export function isConnected(board: Board): boolean {
@@ -162,7 +236,6 @@ export interface BoardValidation {
   ok: boolean
   reason?: string
   words: string[]
-  boardScore: number
 }
 
 export function validateBoard(board: Board, dict: Dictionary): BoardValidation {
@@ -171,13 +244,12 @@ export function validateBoard(board: Board, dict: Dictionary): BoardValidation {
       ok: false,
       reason: 'Dictionary is still loading. Wait a moment and submit again.',
       words: [],
-      boardScore: 0,
     }
   }
 
   const occupied = getOccupiedPositions(board)
   if (occupied.length === 0) {
-    return { ok: false, reason: 'Board is empty.', words: [], boardScore: 0 }
+    return { ok: false, reason: 'Board is empty.', words: [] }
   }
 
   if (!coversCenter(board)) {
@@ -185,7 +257,6 @@ export function validateBoard(board: Board, dict: Dictionary): BoardValidation {
       ok: false,
       reason: 'The centre square must be covered.',
       words: [],
-      boardScore: 0,
     }
   }
 
@@ -194,23 +265,15 @@ export function validateBoard(board: Board, dict: Dictionary): BoardValidation {
       ok: false,
       reason: 'All tiles must form one connected crossword.',
       words: [],
-      boardScore: 0,
     }
   }
 
-  // Isolated single letters (not part of any 2+ word) are allowed only if the whole board is one letter covering center on first play — but first play needs a word typically.
-  // Spec: every horizontal or vertical word of 2+ letters must be valid.
-  // Single-letter islands that are connected orthogonally to the crossword as dangling letters: in Scrabble, single letters aren't "words" of 2+, so they're OK as long as connected.
-  // But a board of only one letter: no 2+ words, covers center, connected — is that valid?
-  // Spec says first valid board must cover centre. Player must add at least one tile. A single letter isn't a word of 2+.
-  // I'll require at least one word of 2+ letters for a valid board.
   const extracted = extractWords(board)
   if (extracted.length === 0) {
     return {
       ok: false,
       reason: 'Place at least one word of 2 or more letters.',
       words: [],
-      boardScore: 0,
     }
   }
 
@@ -220,14 +283,9 @@ export function validateBoard(board: Board, dict: Dictionary): BoardValidation {
       ok: false,
       reason: `Invalid word${invalid.length > 1 ? 's' : ''}: ${invalid.map((w) => w.word).join(', ')}`,
       words: extracted.map((w) => w.word),
-      boardScore: 0,
     }
   }
 
-  // Every occupied tile must belong to at least one 2+ word (no stranded single letters hanging off)
-  // Actually in crossword/Scrabble, a single letter extension that's only length-1 in both directions would be an invalid "dangling" tile in some rules.
-  // Standard Scrabble: every tile played must be part of a valid word. For full-board validation with free rearrange:
-  // Require every occupied cell participates in at least one extracted 2+ word.
   const inWord = new Set<string>()
   for (const w of extracted) {
     for (const cell of w.cells) inWord.add(`${cell.row},${cell.col}`)
@@ -238,56 +296,12 @@ export function validateBoard(board: Board, dict: Dictionary): BoardValidation {
         ok: false,
         reason: 'Every tile must be part of a word of 2+ letters.',
         words: extracted.map((w) => w.word),
-        boardScore: 0,
       }
     }
   }
 
-  const boardScore = extracted.reduce((sum, w) => sum + scoreWord(board, w.cells), 0)
   return {
     ok: true,
     words: extracted.map((w) => w.word),
-    boardScore,
   }
-}
-
-export function moveScore(newBoardScore: number, previousBoardScore: number): number {
-  return Math.max(0, newBoardScore - previousBoardScore)
-}
-
-/** Split a turn's credited points across words formed or extended this play. */
-export function allocateMoveScore(words: ScoredWord[], moveScore: number): number[] {
-  if (words.length === 0) return []
-  if (words.length === 1) return [moveScore]
-
-  const fullTotal = words.reduce((sum, w) => sum + w.score, 0)
-  if (fullTotal === 0) return words.map((_, i) => (i === 0 ? moveScore : 0))
-
-  let allocated = 0
-  return words.map((w, i) => {
-    if (i === words.length - 1) return moveScore - allocated
-    const share = Math.round((moveScore * w.score) / fullTotal)
-    allocated += share
-    return share
-  })
-}
-
-/** Words formed or extended by newly placed tiles, with credited turn score (not full board word value). */
-export function wordsCompletedThisPlay(
-  board: Board,
-  previousBoard: Board,
-  by: TileOwner,
-  moveScore: number,
-): PlayedWord[] {
-  const prevIds = boardTileIds(previousBoard)
-  const newIds = new Set<string>()
-  for (const row of board) {
-    for (const cell of row) {
-      if (cell && !prevIds.has(cell.id)) newIds.add(cell.id)
-    }
-  }
-
-  const words = listWordsCompletedByTiles(board, newIds)
-  const credited = allocateMoveScore(words, moveScore)
-  return words.map((w, i) => ({ ...w, score: credited[i]!, by }))
 }

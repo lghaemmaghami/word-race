@@ -27,7 +27,12 @@ export function InstructionsScreen({ onBack }: InstructionsScreenProps) {
           </li>
           <li>
             <strong>Scoring</strong>
-            <span>You score only the points your play adds to the board total: max(0, new − previous).</span>
+            <span>
+              Each turn scores every word you form or extend. Double/Triple Letter and Word bonuses apply only to
+              tiles you play this turn on unused premium squares. Cross words each score separately. Play all 7 rack
+              tiles in one turn for a 50-point bingo. At game end, unplayed rack tiles are subtracted; if you go out
+              first, you also add the AI&apos;s leftover tiles to your score.
+            </span>
           </li>
           <li>
             <strong>AI turn</strong>

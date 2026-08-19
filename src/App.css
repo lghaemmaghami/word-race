@@ -1304,3 +1304,9 @@
   color: rgba(255, 255, 255, 0.4);
 }
 
+.name-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+

@@ -3,7 +3,8 @@ import type { Difficulty, LeaderboardEntry } from './types'
 const PLAYER_NAME_KEY = 'word-race-player-name'
 const MAX_ENTRIES = 10
 const MAX_SCORE = 1_000_000
-const MAX_NAME_LEN = 32
+const MAX_NAME_LEN = 20
+const VALID_NAME_RE = /^[A-Za-z0-9 _-]+$/
 
 const DB_URL = import.meta.env.VITE_FIREBASE_DB_URL as string | undefined
 
@@ -28,7 +29,7 @@ function sanitizeEntry(value: unknown): LeaderboardEntry | null {
   if (!isDifficulty(raw.difficulty)) return null
 
   const playerName =
-    typeof raw.playerName === 'string' && raw.playerName.length > 0 && raw.playerName.length <= MAX_NAME_LEN
+    typeof raw.playerName === 'string' && raw.playerName.length > 0 && raw.playerName.length <= MAX_NAME_LEN && VALID_NAME_RE.test(raw.playerName)
       ? raw.playerName
       : 'Unknown'
 
@@ -112,5 +113,6 @@ export function getPlayerName(): string | null {
 }
 
 export function setPlayerName(name: string): void {
-  localStorage.setItem(PLAYER_NAME_KEY, name.trim().slice(0, MAX_NAME_LEN))
+  const sanitized = name.trim().replace(/[^A-Za-z0-9 _-]/g, '').slice(0, MAX_NAME_LEN)
+  localStorage.setItem(PLAYER_NAME_KEY, sanitized)
 }

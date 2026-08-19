@@ -1,16 +1,27 @@
 import { useState } from 'react'
 
+const MAX_NAME_LENGTH = 20
+const VALID_NAME_RE = /^[A-Za-z0-9 _-]*$/
+
 interface NameScreenProps {
   onSubmit: (name: string) => void
 }
 
 export function NameScreen({ onSubmit }: NameScreenProps) {
   const [name, setName] = useState('')
+  const trimmed = name.trim()
+  const isValid = trimmed.length > 0 && VALID_NAME_RE.test(trimmed)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (value.length <= MAX_NAME_LENGTH && VALID_NAME_RE.test(value)) {
+      setName(value)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const trimmed = name.trim()
-    if (trimmed.length > 0) onSubmit(trimmed)
+    if (isValid) onSubmit(trimmed)
   }
 
   return (
@@ -27,11 +38,12 @@ export function NameScreen({ onSubmit }: NameScreenProps) {
           className="name-input"
           placeholder="Your name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={32}
+          onChange={handleChange}
+          maxLength={MAX_NAME_LENGTH}
           autoFocus
         />
-        <button type="submit" className="btn btn-primary" disabled={name.trim().length === 0}>
+        <p className="name-hint">Letters, numbers, spaces, hyphens, underscores only</p>
+        <button type="submit" className="btn btn-primary" disabled={!isValid}>
           Continue
         </button>
       </form>

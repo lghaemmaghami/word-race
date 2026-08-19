@@ -34,7 +34,9 @@ function sanitizeEntry(value: unknown): LeaderboardEntry | null {
       : 'Unknown'
 
   const timeLimitSeconds: TimeLimitSeconds =
-    raw.timeLimitSeconds === 90 || raw.timeLimitSeconds === 180 ? raw.timeLimitSeconds : 90
+    raw.timeLimitSeconds === 90 || raw.timeLimitSeconds === 180 || raw.timeLimitSeconds === 0
+      ? raw.timeLimitSeconds
+      : 90
 
   return {
     id: raw.id,

@@ -1,4 +1,4 @@
-import type { Multiplier } from './types'
+import type { Multiplier, TimeLimitSeconds } from './types'
 
 export const BOARD_SIZE = 15
 export const CENTER = 7
@@ -10,6 +10,14 @@ export const PLAYER_TIME_OPTIONS_MS = {
 export const DEFAULT_PLAYER_TIME_SECONDS = 90 as const
 export const PLAYER_TIME_MS = PLAYER_TIME_OPTIONS_MS[DEFAULT_PLAYER_TIME_SECONDS]
 export const AI_TIME_MS = 5_000
+
+export function isTimedMode(limit: TimeLimitSeconds): boolean {
+  return limit !== 0
+}
+
+export function formatTimeLimit(limit: TimeLimitSeconds): string {
+  return limit === 0 ? 'No timer' : `${limit}s`
+}
 export const BINGO_BONUS = 50
 
 export const LETTER_VALUES: Record<string, number> = {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Difficulty, LeaderboardEntry, TimeLimitSeconds } from '../game/types'
+import { formatTimeLimit } from '../game/constants'
 import { formatDifficulty, fetchLeaderboard } from '../game/leaderboard'
 import { InstructionsScreen } from './InstructionsScreen'
 
@@ -48,7 +49,10 @@ export function StartScreen({ dictReady, dictError, onStart, playerName }: Start
         <p className="eyebrow">Single-player crossword duel</p>
         <h1 className="brand">Word Race</h1>
         <p className="tagline">
-          Welcome, <strong>{playerName}</strong>! Outscore the AI before your clock runs out.
+          Welcome, <strong>{playerName}</strong>!{' '}
+          {timeLimit === 0
+            ? 'Outscore the AI until the tiles run out.'
+            : 'Outscore the AI before your clock runs out.'}
         </p>
       </header>
 
@@ -68,6 +72,14 @@ export function StartScreen({ dictReady, dictError, onStart, playerName }: Start
           onClick={() => setTimeLimit(180)}
         >
           180s
+        </button>
+        <button
+          type="button"
+          className={`time-limit-option ${timeLimit === 0 ? 'is-selected' : ''}`}
+          aria-pressed={timeLimit === 0}
+          onClick={() => setTimeLimit(0)}
+        >
+          No timer
         </button>
       </div>
 
@@ -104,7 +116,7 @@ export function StartScreen({ dictReady, dictError, onStart, playerName }: Start
                   <span className="leader-name">{e.playerName}</span>
                   <span className="pts">{e.playerScore}</span>
                 </div>
-                <div className="lb-sub">{formatDifficulty(e.difficulty)} · {e.timeLimitSeconds}s</div>
+                <div className="lb-sub">{formatDifficulty(e.difficulty)} · {formatTimeLimit(e.timeLimitSeconds)}</div>
               </li>
             ))}
           </ol>

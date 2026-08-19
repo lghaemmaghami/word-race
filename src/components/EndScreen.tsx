@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { formatTimeLimit } from '../game/constants'
 import { formatDifficulty, fetchLeaderboard } from '../game/leaderboard'
 import { letterValue } from '../game/constants'
 import type { Board, Difficulty, LeaderboardEntry, PlayedWord } from '../game/types'
@@ -170,7 +171,8 @@ export function EndScreen({
                   <span className="pts">{e.playerScore}</span>
                 </div>
                 <div className="lb-sub">
-                  vs {e.aiScore} · {formatDifficulty(e.difficulty)} · {e.timeLimitSeconds}s{e.won ? ' · Win' : ''}
+                  vs {e.aiScore} · {formatDifficulty(e.difficulty)} · {formatTimeLimit(e.timeLimitSeconds)}
+                  {e.won ? ' · Win' : ''}
                 </div>
               </li>
             ))}

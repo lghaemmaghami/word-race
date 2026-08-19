@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { canSwapFullRack, createBag, fillRack, noTilesLeftToPlay, shuffle, swapFullRack } from './bag'
 import { boardTileIds, cloneBoard, emptyBoard, findTileOnBoard, resetTileSeq } from './board'
-import { PLAYER_TIME_OPTIONS_MS, DEFAULT_PLAYER_TIME_SECONDS, PLAYER_TIME_MS, letterValue } from './constants'
+import {
+  PLAYER_TIME_OPTIONS_MS,
+  DEFAULT_PLAYER_TIME_SECONDS,
+  PLAYER_TIME_MS,
+  isTimedMode,
+  letterValue,
+} from './constants'
 import { dictionary } from './dictionary'
 import { runAiTurn } from './ai'
 import { getPlayerName, submitScore } from './leaderboard'
@@ -168,18 +174,23 @@ export function useGame() {
   )
 
   useEffect(() => {
-    if (screen !== 'game' || turn !== 'player') return
+    if (screen !== 'game' || turn !== 'player' || !isTimedMode(timeLimitSeconds)) return
     const id = window.setInterval(() => {
       setTimeLeftMs((t) => Math.max(0, t - 100))
     }, 100)
     return () => window.clearInterval(id)
-  }, [screen, turn])
+  }, [screen, turn, timeLimitSeconds])
 
   useEffect(() => {
-    if (screen === 'game' && timeLeftMs <= 0 && !endingRef.current) {
+    if (
+      screen === 'game' &&
+      isTimedMode(timeLimitSeconds) &&
+      timeLeftMs <= 0 &&
+      !endingRef.current
+    ) {
       endGame(playerScore, aiScore, difficulty)
     }
-  }, [timeLeftMs, screen, playerScore, aiScore, difficulty, endGame])
+  }, [timeLeftMs, screen, timeLimitSeconds, playerScore, aiScore, difficulty, endGame])
 
   useEffect(() => {
     if (screen !== 'game' || turn !== 'player' || endingRef.current) return
@@ -336,7 +347,7 @@ export function useGame() {
       setUsedPremiumSquares(new Set())
       setPlayerScore(0)
       setAiScore(0)
-      setTimeLeftMs(PLAYER_TIME_OPTIONS_MS[limit])
+      setTimeLeftMs(limit === 0 ? 0 : PLAYER_TIME_OPTIONS_MS[limit])
       setAiSummary(null)
       setMessage('Cover the centre square on your first submit.')
       setPlayedWords([])

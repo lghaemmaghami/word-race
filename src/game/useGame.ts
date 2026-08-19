@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { canSwapFullRack, createBag, fillRack, noTilesLeftToPlay, shuffle, swapFullRack } from './bag'
 import { boardTileIds, cloneBoard, emptyBoard, findTileOnBoard, resetTileSeq } from './board'
 import { PLAYER_TIME_OPTIONS_MS, DEFAULT_PLAYER_TIME_SECONDS, PLAYER_TIME_MS, letterValue } from './constants'
 import { dictionary } from './dictionary'
 import { runAiTurn } from './ai'
 import { getPlayerName, submitScore } from './leaderboard'
-import { rackTileScore } from './scoring'
+import { newTileIdsBetweenBoards, rackTileScore, scorePlay } from './scoring'
 import { validateSubmission } from './validation'
 import type { AiMoveSummary, Board, Difficulty, PlayedWord, Tile, TimeLimitSeconds } from './types'
 
@@ -547,6 +547,24 @@ export function useGame() {
     setScreen('start')
   }, [])
 
+  const playPreview = useMemo(() => {
+    if (screen !== 'game' || turn !== 'player') return null
+
+    const newIds = newTileIdsBetweenBoards(committedBoard, board)
+    const rackNewIds = new Set<string>()
+    for (const id of newIds) {
+      if (rackTileIdsThisTurn.has(id)) rackNewIds.add(id)
+    }
+    if (rackNewIds.size === 0) return null
+
+    const result = scorePlay(board, rackNewIds, usedPremiumSquares)
+    return {
+      moveScore: result.moveScore,
+      words: result.words,
+      bingo: result.bingo,
+    }
+  }, [screen, turn, board, committedBoard, usedPremiumSquares, rackTileIdsThisTurn])
+
   return {
     screen,
     difficulty,
@@ -568,6 +586,7 @@ export function useGame() {
     won,
     currentEntryId,
     playedWords,
+    playPreview,
     startGame,
     selectRackTile,
     selectCell,

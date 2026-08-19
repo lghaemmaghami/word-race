@@ -32,10 +32,30 @@ export function GameScreen({ game }: { game: Game }) {
         <div className="turn-banner" data-turn={game.turn}>
           {playerTurn ? 'Your turn' : 'AI thinking'}
         </div>
-        <p className="meta-line">
+        {playerTurn && game.playPreview ? (
+          <div className="play-preview" aria-live="polite" aria-label={`This play scores ${game.playPreview.moveScore} points`}>
+            <span className="play-preview-label">This play</span>
+            <strong className="play-preview-value">+{game.playPreview.moveScore}</strong>
+            {game.playPreview.bingo ? <span className="play-preview-bingo">bingo</span> : null}
+          </div>
+        ) : (
+          <p className="meta-line">
+            Bag {game.bagCount} · {game.difficulty}
+          </p>
+        )}
+      </div>
+
+      {playerTurn && game.playPreview && game.playPreview.words.length > 0 ? (
+        <p className="play-preview-words" aria-hidden="true">
+          {game.playPreview.words.map((w) => `${w.word} ${w.score}`).join(' · ')}
+        </p>
+      ) : null}
+
+      {playerTurn && game.playPreview ? (
+        <p className="meta-line meta-line-below">
           Bag {game.bagCount} · {game.difficulty}
         </p>
-      </div>
+      ) : null}
 
       <p className={`status-line ${status ? 'has-status' : ''}`} aria-live="polite">
         {status ?? '\u00a0'}

@@ -413,6 +413,51 @@
   color: #3083dc;
 }
 
+.play-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(79, 180, 119, 0.12);
+  border: 1px solid rgba(79, 180, 119, 0.45);
+}
+
+.play-preview-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sand-dim);
+}
+
+.play-preview-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--lime);
+}
+
+.play-preview-bingo {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffd76a;
+}
+
+.play-preview-words {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  color: var(--sand-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta-line-below {
+  margin: -0.15rem 0 0.35rem;
+}
+
 .game-screen .status-line {
   margin: 0 0 0.35rem;
   min-height: 1.15rem;

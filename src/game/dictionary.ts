@@ -1,5 +1,4 @@
 import { SCRABBLE_TWO_LETTER_WORDS } from './twoLetterWords'
-import { SYMBOL_WORD_BLOCKLIST } from './symbolWordBlocklist'
 
 const MIN_DICTIONARY_SIZE = 10_000
 
@@ -30,7 +29,6 @@ export class Dictionary {
       if (w.length < 2 || w.length > 15) continue
       if (!/^[A-Z]+$/.test(w)) continue
       if (w.length === 2 && !SCRABBLE_TWO_LETTER_WORDS.has(w)) continue
-      if (SYMBOL_WORD_BLOCKLIST.has(w)) continue
       words.add(w)
       const list = byLength.get(w.length)
       if (list) list.push(w)

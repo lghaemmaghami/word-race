@@ -7,9 +7,10 @@ interface StartScreenProps {
   dictReady: boolean
   dictError: string | null
   onStart: (d: Difficulty, timeLimitSeconds: TimeLimitSeconds) => void
+  playerName: string
 }
 
-export function StartScreen({ dictReady, dictError, onStart }: StartScreenProps) {
+export function StartScreen({ dictReady, dictError, onStart, playerName }: StartScreenProps) {
   const [showInstructions, setShowInstructions] = useState(false)
   const [timeLimit, setTimeLimit] = useState<TimeLimitSeconds>(90)
   const leaders = loadLeaderboard().slice(0, 5)
@@ -43,7 +44,7 @@ export function StartScreen({ dictReady, dictError, onStart }: StartScreenProps)
         <p className="eyebrow">Single-player crossword duel</p>
         <h1 className="brand">Word Race</h1>
         <p className="tagline">
-          Outscore the AI on a shared crossword board before your clock runs out.
+          Welcome, <strong>{playerName}</strong>! Outscore the AI before your clock runs out.
         </p>
       </header>
 
@@ -94,6 +95,7 @@ export function StartScreen({ dictReady, dictError, onStart }: StartScreenProps)
           <ol>
             {leaders.map((e) => (
               <li key={e.id}>
+                <span className="leader-name">{e.playerName}</span>
                 <span>{e.playerScore}</span>
                 <span>
                   {formatDifficulty(e.difficulty)}

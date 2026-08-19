@@ -160,13 +160,12 @@ export function EndScreen({
             {leaders.map((e, i) => (
               <li key={e.id} className={e.id === currentEntryId ? 'is-current' : ''}>
                 <span className="rank">{i + 1}</span>
+                <span className="leader-name">{e.playerName}</span>
                 <span className="pts">{e.playerScore}</span>
                 <span className="detail">
                   <span className="detail-vs">vs {e.aiScore}</span>
                   <span className="detail-sep">·</span>
                   <span>{formatDifficulty(e.difficulty)}</span>
-                  <span className="detail-sep">·</span>
-                  <span className="detail-win">Win</span>
                 </span>
               </li>
             ))}

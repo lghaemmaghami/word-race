@@ -38,6 +38,7 @@ export interface AiMoveSummary {
 export interface LeaderboardEntry {
   id: string
   date: string
+  playerName: string
   playerScore: number
   aiScore: number
   difference: number

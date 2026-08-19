@@ -4,7 +4,7 @@ import { boardTileIds, cloneBoard, emptyBoard, findTileOnBoard, resetTileSeq } f
 import { PLAYER_TIME_OPTIONS_MS, DEFAULT_PLAYER_TIME_SECONDS, PLAYER_TIME_MS, letterValue } from './constants'
 import { dictionary } from './dictionary'
 import { runAiTurn } from './ai'
-import { saveLeaderboardEntry } from './leaderboard'
+import { getPlayerName, saveLeaderboardEntry } from './leaderboard'
 import { listWordsCompletedByTiles } from './scoring'
 import { validateSubmission } from './validation'
 import type { AiMoveSummary, Board, Difficulty, PlayedWord, Tile, TileOwner, TimeLimitSeconds } from './types'
@@ -124,13 +124,14 @@ export function useGame() {
     setWon(playerWon)
     const saved = saveLeaderboardEntry({
       date: new Date().toISOString(),
+      playerName: getPlayerName() ?? 'Unknown',
       playerScore: pScore,
       aiScore: aScore,
       difference: pScore - aScore,
       won: playerWon,
       difficulty: diff,
     })
-    setCurrentEntryId(saved.id)
+    setCurrentEntryId(saved?.id ?? null)
     setTurn('player')
     setBoard(cloneBoard(stateRef.current.committedBoard))
     setScreen('end')

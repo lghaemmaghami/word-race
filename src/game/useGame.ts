@@ -11,7 +11,7 @@ import {
 import { dictionary } from './dictionary'
 import { runAiTurn } from './ai'
 import { getPlayerName, submitScore } from './leaderboard'
-import { newTileIdsBetweenBoards, rackTileScore, scorePlay } from './scoring'
+import { rackTileScore } from './scoring'
 import { validateSubmission } from './validation'
 import type { AiMoveSummary, Board, Difficulty, PlayedWord, Tile, TimeLimitSeconds } from './types'
 
@@ -561,18 +561,18 @@ export function useGame() {
   const playPreview = useMemo(() => {
     if (screen !== 'game' || turn !== 'player') return null
 
-    const newIds = newTileIdsBetweenBoards(committedBoard, board)
-    const rackNewIds = new Set<string>()
-    for (const id of newIds) {
-      if (rackTileIdsThisTurn.has(id)) rackNewIds.add(id)
-    }
-    if (rackNewIds.size === 0) return null
+    const result = validateSubmission({
+      workingBoard: board,
+      committedBoard,
+      usedPremiumSquares,
+      dict: dictionary,
+      rackTileIdsThisTurn,
+    })
+    if (!result.ok || result.moveScore == null) return null
 
-    const result = scorePlay(board, rackNewIds, usedPremiumSquares)
     return {
       moveScore: result.moveScore,
-      words: result.words,
-      bingo: result.bingo,
+      bingo: result.bingo ?? false,
     }
   }, [screen, turn, board, committedBoard, usedPremiumSquares, rackTileIdsThisTurn])
 

@@ -9,6 +9,8 @@ export function GameScreen({ game }: { game: Game }) {
   const seconds = Math.ceil(game.timeLeftMs / 1000)
   const playerTurn = game.turn === 'player'
   const status = game.message ?? (game.aiSummary ? game.aiSummary.detail : null)
+  const preview = playerTurn ? game.playPreview : null
+  const submitLabel = preview ? `Submit · +${preview.moveScore}` : 'Submit'
 
   return (
     <div className="screen game-screen">
@@ -36,30 +38,10 @@ export function GameScreen({ game }: { game: Game }) {
         <div className="turn-banner" data-turn={game.turn}>
           {playerTurn ? 'Your turn' : 'AI thinking'}
         </div>
-        {playerTurn && game.playPreview ? (
-          <div className="play-preview" aria-live="polite" aria-label={`This play scores ${game.playPreview.moveScore} points`}>
-            <span className="play-preview-label">This play</span>
-            <strong className="play-preview-value">+{game.playPreview.moveScore}</strong>
-            {game.playPreview.bingo ? <span className="play-preview-bingo">bingo</span> : null}
-          </div>
-        ) : (
-          <p className="meta-line">
-            Bag {game.bagCount} · {game.difficulty}
-          </p>
-        )}
-      </div>
-
-      {playerTurn && game.playPreview && game.playPreview.words.length > 0 ? (
-        <p className="play-preview-words" aria-hidden="true">
-          {game.playPreview.words.map((w) => `${w.word} ${w.score}`).join(' · ')}
-        </p>
-      ) : null}
-
-      {playerTurn && game.playPreview ? (
-        <p className="meta-line meta-line-below">
+        <p className="meta-line">
           Bag {game.bagCount} · {game.difficulty}
         </p>
-      ) : null}
+      </div>
 
       <p className={`status-line ${status ? 'has-status' : ''}`} aria-live="polite">
         {status ?? '\u00a0'}
@@ -87,8 +69,18 @@ export function GameScreen({ game }: { game: Game }) {
         />
 
         <div className="action-bar">
-          <button type="button" className="btn btn-primary" onClick={game.submit} disabled={!playerTurn}>
-            Submit
+          <button
+            type="button"
+            className={`btn btn-primary ${preview ? 'has-preview' : ''}`}
+            onClick={game.submit}
+            disabled={!playerTurn}
+            aria-label={
+              preview
+                ? `Submit play for ${preview.moveScore} points${preview.bingo ? ', bingo' : ''}`
+                : 'Submit'
+            }
+          >
+            {submitLabel}
           </button>
           <button type="button" className="btn btn-ghost" onClick={game.recall} disabled={!playerTurn}>
             Recall

@@ -28,7 +28,8 @@ export function InstructionsScreen({ onBack }: InstructionsScreenProps) {
             <strong>Submit a turn</strong>
             <span>
               Build valid crossword words, then hit Submit. Recall or Shuffle to adjust tiles. Swap exchanges your
-              whole rack (needs 7+ in the bag). Pass skips your turn if you have no play.
+              whole rack (needs 7+ in the bag). Pass skips your turn if you have no play. If you and the AI both pass
+              in a row, the game ends.
             </span>
           </li>
           <li>
@@ -48,8 +49,8 @@ export function InstructionsScreen({ onBack }: InstructionsScreenProps) {
             <strong>Win</strong>
             <span>
               Timed games end when your clock hits zero or the tiles run out. If time expires with a valid play on the
-              board, that play is submitted automatically before the game ends. Untimed games end only when the bag and
-              a player&apos;s rack are both empty. Highest score wins.
+              board, that play is submitted automatically before the game ends. The game also ends after consecutive
+              passes by you and the AI, or when the bag and a player&apos;s rack are both empty. Highest score wins.
             </span>
           </li>
         </ol>

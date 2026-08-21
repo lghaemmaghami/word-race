@@ -462,6 +462,31 @@ export function useGame() {
     })
   }, [turn, screen, runAi])
 
+  const passTurn = useCallback(() => {
+    if (turn !== 'player' || screen !== 'game') return
+    const s = stateRef.current
+    const loose = collectLooseTiles(s.board, s.committedBoard)
+    const restored = cloneBoard(s.committedBoard)
+    const rack = mergeRack(s.playerRack, loose)
+    setBoard(restored)
+    setPlayerRack(rack)
+    setSelectedTileId(null)
+    setSelectedCell(null)
+    setMessage('Passed')
+    setAiSummary(null)
+
+    void runAi({
+      board: restored,
+      aiRack: s.aiRack,
+      bag: s.bag,
+      usedPremiumSquares: s.usedPremiumSquares,
+      aiScore: s.aiScore,
+      playerScore: s.playerScore,
+      difficulty: s.difficulty,
+      playerRack: rack,
+    })
+  }, [turn, screen, runAi])
+
   const returnUncommittedToRack = useCallback((tileId: string): boolean => {
     if (turn !== 'player') return false
     const s = stateRef.current
@@ -606,6 +631,7 @@ export function useGame() {
     recall,
     shuffleRack,
     swapRack,
+    passTurn,
     playAgain,
     backToStart,
     letterValue,

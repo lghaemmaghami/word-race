@@ -26,7 +26,10 @@ export function InstructionsScreen({ onBack }: InstructionsScreenProps) {
           </li>
           <li>
             <strong>Submit a turn</strong>
-            <span>Build valid crossword words, then hit Submit. Recall, Shuffle, or Swap if you need a reset.</span>
+            <span>
+              Build valid crossword words, then hit Submit. Recall or Shuffle to adjust tiles. Swap exchanges your
+              whole rack (needs 7+ in the bag). Pass skips your turn if you have no play.
+            </span>
           </li>
           <li>
             <strong>Scoring</strong>

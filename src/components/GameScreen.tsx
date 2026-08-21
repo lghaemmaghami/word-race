@@ -97,6 +97,15 @@ export function GameScreen({ game }: { game: Game }) {
           >
             Swap
           </button>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={game.passTurn}
+            disabled={!playerTurn}
+            title="Pass without playing (forfeits turn)"
+          >
+            Pass
+          </button>
         </div>
       </div>
     </div>

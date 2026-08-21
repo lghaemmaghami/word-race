@@ -534,6 +534,10 @@
   box-shadow: 0 0 0 2px var(--lime);
 }
 
+.cell.is-locked {
+  cursor: default;
+}
+
 .cell.is-selected .tile,
 .rack-tile.is-selected {
   outline: 2px solid var(--lime-deep);

@@ -36,6 +36,7 @@ export function BoardView({
           const mult = MULTIPLIERS[r][c]
           const isCenter = r === CENTER && c === CENTER
           const isNew = Boolean(cell && committedIds && !committedIds.has(cell.id))
+          const isLocked = Boolean(cell && committedIds?.has(cell.id))
           const isSelected = Boolean(cell && selectedTileId && cell.id === selectedTileId)
           return (
             <button
@@ -47,6 +48,7 @@ export function BoardView({
                 isCenter ? 'is-center' : '',
                 cell ? 'has-tile' : '',
                 isNew ? 'is-new' : '',
+                isLocked ? 'is-locked' : '',
                 isSelected ? 'is-selected' : '',
               ]
                 .filter(Boolean)
@@ -57,7 +59,9 @@ export function BoardView({
               aria-disabled={readOnly || disabled}
               aria-label={
                 cell
-                  ? `Tile ${cell.letter} at row ${r + 1} column ${c + 1}`
+                  ? isLocked
+                    ? `Submitted tile ${cell.letter} at row ${r + 1} column ${c + 1}`
+                    : `Tile ${cell.letter} at row ${r + 1} column ${c + 1}`
                   : `Empty ${mult !== 'none' ? mult : 'square'} at row ${r + 1} column ${c + 1}`
               }
             >

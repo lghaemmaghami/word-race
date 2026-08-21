@@ -579,8 +579,16 @@ export function useGame() {
       if (turn !== 'player') return
       const s = stateRef.current
       const cell = s.board[row][col]
+      const committedIds = boardTileIds(s.committedBoard)
 
       if (selectedTileId) {
+        if (committedIds.has(selectedTileId)) {
+          setSelectedTileId(null)
+          setSelectedCell(null)
+          setMessage('Submitted tiles stay on the board')
+          return
+        }
+
         if (cell && cell.id === selectedTileId) {
           if (!returnUncommittedToRack(cell.id)) {
             setSelectedTileId(null)
@@ -596,6 +604,13 @@ export function useGame() {
 
         const fromRack = s.playerRack.find((t) => t.id === selectedTileId)
         const fromBoard = findTileOnBoard(s.board, selectedTileId)
+        if (fromBoard && committedIds.has(selectedTileId)) {
+          setSelectedTileId(null)
+          setSelectedCell(null)
+          setMessage('Submitted tiles stay on the board')
+          return
+        }
+
         const next = cloneBoard(s.board)
         let nextRack = [...s.playerRack]
 
@@ -618,6 +633,10 @@ export function useGame() {
       }
 
       if (cell) {
+        if (committedIds.has(cell.id)) {
+          setMessage('Submitted tiles stay on the board')
+          return
+        }
         setSelectedTileId(cell.id)
         setSelectedCell({ row, col })
       } else {

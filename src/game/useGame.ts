@@ -65,6 +65,7 @@ export function useGame() {
 
   const endingRef = useRef(false)
   const aiBusy = useRef(false)
+  const consecutivePassesRef = useRef(0)
   const playerRackRef = useRef(playerRack)
   const stateRef = useRef({
     board,
@@ -260,6 +261,15 @@ export function useGame() {
     setTurn('player')
   }, [])
 
+  const clearPassStreak = useCallback(() => {
+    consecutivePassesRef.current = 0
+  }, [])
+
+  const notePass = useCallback(() => {
+    consecutivePassesRef.current += 1
+    return consecutivePassesRef.current >= 2
+  }, [])
+
   const handOffToPlayerOrEnd = useCallback(
     (playerRack: Tile[], nextBag: Tile[], pScore: number, aScore: number, diff: Difficulty) => {
       if (noTilesLeftToPlay(playerRack, nextBag)) {
@@ -308,6 +318,7 @@ export function useGame() {
         })
 
         if (result.type === 'play') {
+          clearPassStreak()
           let nextBag = snapshot.bag
           let nextRack = result.move.rack
           ;({ rack: nextRack, bag: nextBag } = fillRack(nextRack, nextBag))
@@ -347,6 +358,7 @@ export function useGame() {
         if (canSwapFullRack(snapshot.bag)) {
           const swapped = swapFullRack(snapshot.aiRack, snapshot.bag)
           if (swapped) {
+            clearPassStreak()
             setAiRack(swapped.rack)
             setBag(swapped.bag)
             setAiSummary({ type: 'swap', detail: 'AI swapped its full rack' })
@@ -364,6 +376,10 @@ export function useGame() {
 
         setAiSummary({ type: 'pass', detail: 'AI passed' })
         setMessage(null)
+        if (notePass()) {
+          endGame(snapshot.playerScore, snapshot.aiScore, snapshot.difficulty)
+          return
+        }
         handOffToPlayerOrEnd(
           snapshot.playerRack,
           snapshot.bag,
@@ -375,7 +391,7 @@ export function useGame() {
         aiBusy.current = false
       }
     },
-    [endGame, handOffToPlayerOrEnd],
+    [endGame, handOffToPlayerOrEnd, clearPassStreak, notePass],
   )
 
   const startGame = useCallback(
@@ -384,6 +400,7 @@ export function useGame() {
       resetTileSeq()
       endingRef.current = false
       aiBusy.current = false
+      consecutivePassesRef.current = 0
       let nextBag = createBag()
       let pRack: Tile[] = []
       let aRack: Tile[] = []
@@ -427,6 +444,8 @@ export function useGame() {
       return
     }
 
+    clearPassStreak()
+
     const gained = result.moveScore ?? 0
     const newPlayerScore = s.playerScore + gained
     setPlayerScore(newPlayerScore)
@@ -462,7 +481,7 @@ export function useGame() {
       difficulty: s.difficulty,
       playerRack: filled,
     })
-  }, [turn, screen, rackTileIdsThisTurn, runAi, endGame])
+  }, [turn, screen, rackTileIdsThisTurn, runAi, endGame, clearPassStreak])
 
   const recall = useCallback(() => {
     if (turn !== 'player') return
@@ -502,6 +521,7 @@ export function useGame() {
     setSelectedCell(null)
     setMessage('Swapped rack — turn forfeited')
     setAiSummary(null)
+    clearPassStreak()
 
     void runAi({
       board: restored,
@@ -513,7 +533,7 @@ export function useGame() {
       difficulty: s.difficulty,
       playerRack: swapped.rack,
     })
-  }, [turn, screen, runAi])
+  }, [turn, screen, runAi, clearPassStreak])
 
   const passTurn = useCallback(() => {
     if (turn !== 'player' || screen !== 'game') return
@@ -528,6 +548,11 @@ export function useGame() {
     setMessage('Passed')
     setAiSummary(null)
 
+    if (notePass()) {
+      void endGame(s.playerScore, s.aiScore, s.difficulty)
+      return
+    }
+
     void runAi({
       board: restored,
       aiRack: s.aiRack,
@@ -538,7 +563,7 @@ export function useGame() {
       difficulty: s.difficulty,
       playerRack: rack,
     })
-  }, [turn, screen, runAi])
+  }, [turn, screen, runAi, notePass, endGame])
 
   const returnUncommittedToRack = useCallback((tileId: string): boolean => {
     if (turn !== 'player') return false

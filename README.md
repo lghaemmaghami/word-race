@@ -18,7 +18,7 @@ Open the local URL, choose **Easy** or **Hard**, and race the clock.
 ## Rules (MVP)
 
 - 90 or 180 seconds of active player time (pauses on AI turns); when time runs out, a valid play still on the board is submitted automatically
-- Game also ends when the bag is empty and a player has no tiles left to play
+- Game also ends when the bag is empty and a player has no tiles left to play, or when both sides pass in a row
 - Full-board rearrange before submit; no locked tiles
 - Official Scrabble turn scoring: sum words formed/modified each turn; premiums on newly played tiles only; +50 bingo for using all 7 rack tiles; end-game rack adjustments
 - AI must move within 5 seconds or swap/pass

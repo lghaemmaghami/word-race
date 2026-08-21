@@ -181,6 +181,59 @@ export function useGame() {
     return () => window.clearInterval(id)
   }, [screen, turn, timeLimitSeconds])
 
+  const finishOnTimeout = useCallback(() => {
+    if (endingRef.current || screen !== 'game') return
+    const s = stateRef.current
+
+    const result = validateSubmission({
+      workingBoard: s.board,
+      committedBoard: s.committedBoard,
+      usedPremiumSquares: s.usedPremiumSquares,
+      dict: dictionary,
+      rackTileIdsThisTurn,
+    })
+
+    let pScore = s.playerScore
+    let playerWentOut = false
+
+    if (result.ok) {
+      const gained = result.moveScore ?? 0
+      pScore = s.playerScore + gained
+      const committed = cloneBoard(s.board)
+      const onBoard = boardTileIds(s.board)
+      const remainingRack = s.playerRack.filter((t) => !onBoard.has(t.id))
+      const { rack: filled, bag: nextBag } = fillRack(remainingRack, s.bag)
+      const nextPremiums = result.usedPremiumSquares ?? s.usedPremiumSquares
+
+      setPlayerScore(pScore)
+      setCommittedBoard(committed)
+      setBoard(committed)
+      setUsedPremiumSquares(nextPremiums)
+      setPlayedWords((prev) => [
+        ...prev,
+        ...(result.scoredWords ?? []).map((w) => ({ ...w, by: 'player' as const })),
+      ])
+      setPlayerRack(filled)
+      setBag(nextBag)
+      setSelectedTileId(null)
+      setSelectedCell(null)
+
+      stateRef.current = {
+        ...stateRef.current,
+        board: committed,
+        committedBoard: committed,
+        playerRack: filled,
+        bag: nextBag,
+        usedPremiumSquares: nextPremiums,
+        playerScore: pScore,
+      }
+
+      playerWentOut = noTilesLeftToPlay(filled, nextBag)
+    }
+
+    void endGame(pScore, s.aiScore, s.difficulty, { playerWentOut })
+  }, [screen, rackTileIdsThisTurn, endGame])
+
   useEffect(() => {
     if (
       screen === 'game' &&
@@ -188,9 +241,9 @@ export function useGame() {
       timeLeftMs <= 0 &&
       !endingRef.current
     ) {
-      endGame(playerScore, aiScore, difficulty)
+      finishOnTimeout()
     }
-  }, [timeLeftMs, screen, timeLimitSeconds, playerScore, aiScore, difficulty, endGame])
+  }, [timeLeftMs, screen, timeLimitSeconds, finishOnTimeout])
 
   useEffect(() => {
     if (screen !== 'game' || turn !== 'player' || endingRef.current) return

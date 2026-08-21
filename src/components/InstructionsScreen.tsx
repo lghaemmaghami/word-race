@@ -47,8 +47,9 @@ export function InstructionsScreen({ onBack }: InstructionsScreenProps) {
           <li>
             <strong>Win</strong>
             <span>
-              Timed games end when your clock hits zero or the tiles run out. Untimed games end only when the bag and a
-              player&apos;s rack are both empty. Highest score wins.
+              Timed games end when your clock hits zero or the tiles run out. If time expires with a valid play on the
+              board, that play is submitted automatically before the game ends. Untimed games end only when the bag and
+              a player&apos;s rack are both empty. Highest score wins.
             </span>
           </li>
         </ol>

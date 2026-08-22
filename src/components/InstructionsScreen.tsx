@@ -28,8 +28,9 @@ export function InstructionsScreen({ onBack }: InstructionsScreenProps) {
             <strong>Submit a turn</strong>
             <span>
               Build valid crossword words, then hit Submit. Recall or Shuffle to adjust tiles. Swap exchanges your
-              whole rack (needs 7+ in the bag). Pass skips your turn if you have no play. If you and the AI both pass
-              in a row, the game ends.
+              whole rack (needs 7+ in the bag). Pass skips your turn if you have no play. If no legal play is found
+              for your rack, you&apos;ll see a hint to Pass or Swap. If you and the AI both pass in a row, the game
+              ends.
             </span>
           </li>
           <li>

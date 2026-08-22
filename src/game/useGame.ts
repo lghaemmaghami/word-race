@@ -9,7 +9,7 @@ import {
   letterValue,
 } from './constants'
 import { dictionary } from './dictionary'
-import { runAiTurn } from './ai'
+import { hasAnyValidMove, runAiTurn } from './ai'
 import { getPlayerName, submitScore } from './leaderboard'
 import { rackTileScore } from './scoring'
 import { validateSubmission } from './validation'
@@ -66,6 +66,7 @@ export function useGame() {
   const endingRef = useRef(false)
   const aiBusy = useRef(false)
   const consecutivePassesRef = useRef(0)
+  const mobilityCheckGen = useRef(0)
   const playerRackRef = useRef(playerRack)
   const stateRef = useRef({
     board,
@@ -143,6 +144,7 @@ export function useGame() {
     ) => {
       if (endingRef.current) return
       endingRef.current = true
+      mobilityCheckGen.current += 1
       const { player: pScore, ai: aScore } = finalizeScores(
         rawPlayerScore,
         rawAiScore,
@@ -261,6 +263,33 @@ export function useGame() {
     setTurn('player')
   }, [])
 
+  const checkPlayerMobility = useCallback(async (rack: Tile[]) => {
+    const gen = ++mobilityCheckGen.current
+    const snapshot = {
+      board: cloneBoard(stateRef.current.committedBoard),
+      rack: rack.map((t) => ({ ...t })),
+      usedPremiumSquares: new Set(stateRef.current.usedPremiumSquares),
+      bagCount: stateRef.current.bag.length,
+    }
+    await new Promise((r) => setTimeout(r, 0))
+    if (gen !== mobilityCheckGen.current || endingRef.current) return
+
+    const hasMove = hasAnyValidMove(
+      snapshot.board,
+      snapshot.rack,
+      dictionary,
+      snapshot.usedPremiumSquares,
+    )
+    if (gen !== mobilityCheckGen.current || endingRef.current) return
+    if (!hasMove) {
+      setMessage(
+        snapshot.bagCount >= 7
+          ? 'No valid plays — Pass or Swap'
+          : 'No valid plays — Pass to continue',
+      )
+    }
+  }, [])
+
   const clearPassStreak = useCallback(() => {
     consecutivePassesRef.current = 0
   }, [])
@@ -277,8 +306,9 @@ export function useGame() {
         return
       }
       beginPlayerTurn(playerRack)
+      void checkPlayerMobility(playerRack)
     },
-    [beginPlayerTurn, endGame],
+    [beginPlayerTurn, checkPlayerMobility, endGame],
   )
 
   const runAi = useCallback(
@@ -304,6 +334,7 @@ export function useGame() {
         return
       }
       aiBusy.current = true
+      mobilityCheckGen.current += 1
       setTurn('ai')
       setMessage('AI is thinking…')
       await new Promise((r) => setTimeout(r, 40))
@@ -401,6 +432,7 @@ export function useGame() {
       endingRef.current = false
       aiBusy.current = false
       consecutivePassesRef.current = 0
+      mobilityCheckGen.current += 1
       let nextBag = createBag()
       let pRack: Tile[] = []
       let aRack: Tile[] = []
@@ -423,8 +455,9 @@ export function useGame() {
       setPlayedWords([])
       setScreen('game')
       beginPlayerTurn(pRack)
+      void checkPlayerMobility(pRack)
     },
-    [beginPlayerTurn],
+    [beginPlayerTurn, checkPlayerMobility],
   )
 
   const submit = useCallback(() => {

@@ -165,13 +165,14 @@ export function findAiMoves(
   usedPremiumSquares: Set<string>,
   difficulty: Difficulty,
   timeLimitMs = AI_TIME_MS,
+  options?: { maxCandidates?: number },
 ): CandidateMove[] {
   const deadline = Date.now() + timeLimitMs - 80
   const candidates: CandidateMove[] = []
   const seen = new Set<string>()
   const rackLetters = rack.map((t) => t.letter)
   const isEmpty = getOccupiedPositions(board).length === 0
-  const maxCandidates = difficulty === 'hard' ? 180 : 70
+  const maxCandidates = options?.maxCandidates ?? (difficulty === 'hard' ? 180 : 70)
   const permLimit = difficulty === 'hard' ? 400 : 120
 
   const dirs: Array<'across' | 'down'> = ['across', 'down']
@@ -363,6 +364,21 @@ export function chooseAiMove(
   const pool = sorted.length === 1 ? sorted : sorted.slice(Math.max(cut, 0))
   const usable = pool.length > 0 ? pool : sorted
   return usable[Math.floor(Math.random() * usable.length)]
+}
+
+/** Fast existence check: stop after the first legal placement (or time budget). */
+export function hasAnyValidMove(
+  board: Board,
+  rack: Tile[],
+  dict: Dictionary,
+  usedPremiumSquares: Set<string>,
+  timeLimitMs = 700,
+): boolean {
+  return (
+    findAiMoves(board, rack, dict, usedPremiumSquares, 'hard', timeLimitMs, {
+      maxCandidates: 1,
+    }).length > 0
+  )
 }
 
 export function runAiTurn(params: {

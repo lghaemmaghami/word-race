@@ -10,7 +10,7 @@ export function GameScreen({ game }: { game: Game }) {
   const playerTurn = game.turn === 'player'
   const status = game.message ?? (game.aiSummary ? game.aiSummary.detail : null)
   const preview = playerTurn ? game.playPreview : null
-  const submitLabel = preview ? `Submit · +${preview.moveScore}` : 'Submit'
+  const submitLabel = preview ? `Submit +${preview.moveScore}` : 'Submit'
 
   return (
     <div className="screen game-screen">
